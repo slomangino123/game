@@ -43,7 +43,7 @@ window.addEventListener("keydown", event => {
             wInterval = setInterval(() =>
             {
                 scrollCanvasUp();
-            }, 10)
+            }, 4)
         }
         return;
     }
@@ -52,7 +52,7 @@ window.addEventListener("keydown", event => {
             aInterval = setInterval(() =>
             {
                 scrollCanvasLeft();
-            }, 10)
+            }, 4)
         }
         return;
     }
@@ -61,7 +61,7 @@ window.addEventListener("keydown", event => {
             sInterval = setInterval(() =>
             {
                 scrollCanvasDown();
-            }, 10)
+            }, 4)
         }
         return;
     }
@@ -70,13 +70,12 @@ window.addEventListener("keydown", event => {
             dInterval = setInterval(() =>
             {
                 scrollCanvasRight();
-            }, 10)
+            }, 4)
         }
         return;
     }
 });
 window.addEventListener("keyup", event => {
-
     if (event.code === 'KeyW') { //w
       window.clearInterval(wInterval);
       wInterval = undefined;
@@ -117,7 +116,10 @@ function scrollCanvasUp() {
     chunks.forEach(chunk => {
         chunk.y++;
         chunk.backgroundObjects.forEach(obj => {
-            obj.y++
+            obj.y++;
+        });
+        chunk.resources.forEach(obj => {
+            obj.y++;
         });
     });
     projectiles.forEach(projectile => {
@@ -129,7 +131,10 @@ function scrollCanvasDown() {
     chunks.forEach(chunk => {
         chunk.y--;
         chunk.backgroundObjects.forEach(obj => {
-            obj.y--
+            obj.y--;
+        });
+        chunk.resources.forEach(obj => {
+            obj.y--;
         });
     });
     projectiles.forEach(projectile => {
@@ -141,6 +146,9 @@ function scrollCanvasLeft() {
     chunks.forEach(chunk => {
         chunk.x++;
         chunk.backgroundObjects.forEach(obj => {
+            obj.x++;
+        });
+        chunk.resources.forEach(obj => {
             obj.x++;
         });
     });
@@ -155,23 +163,39 @@ function scrollCanvasRight() {
         chunk.backgroundObjects.forEach(obj => {
             obj.x--;
         });
+        chunk.resources.forEach(obj => {
+            obj.x--;
+        });
     });
     projectiles.forEach(projectile => {
         projectile.x--;
     });
 }
 
-function removeFarAwayObjects() {
-    // backgroundObjects.forEach((obj, index) => {
-    //     if (obj.x > canvas.width + 10 || obj.x < -10) {
-    //         setTimeout(() => {
-    //             backgroundObjects.splice(index, 1);
-    //         }, 0)
-    //     } else if (obj.y > canvas.height + 10 || obj.y < -10) {
-    //         setTimeout(() => {
-    //             backgroundObjects.splice(index, 1);
-    //         }, 0)
-    //     }
+function despawnDistantChunks() {
+    const originalChunks = [...chunks];
+    for (let i = originalChunks.length - 1; i > -1; i--) {
+        if (chunks[i].x > (player.x + (Chunk.CHUNK_WIDTH * 3)) || chunks[i].x < (player.x - (Chunk.CHUNK_WIDTH * 3))) {
+            setTimeout(() => {
+                chunks.splice(i, 1);
+            }, 0);
+        }
+
+        if (chunks[i].y > (player.y + (Chunk.CHUNK_HEIGHT * 3)) || chunks[i].y < (player.y - (Chunk.CHUNK_HEIGHT * 3))) {
+            setTimeout(() => {
+                chunks.splice(i, 1);
+            }, 0);
+        }
+    }
+    // originalChunks.forEach((chunk, index) => {
+        // if (chunk.x > (player.x + (Chunk.CHUNK_WIDTH * 4)) || chunk.x < (player.x - (Chunk.CHUNK_WIDTH * 4))) {
+            // setTimeout(() => {
+            //     console.log(`player coords: ${player.x}, ${player.y}`);
+            //     console.log(`chunk coords: ${chunk.x}, ${chunk.y}`)
+            //     chunks.splice(index, 1);
+            // }, 0);
+        // }
+        //  return (chunk.x > (player.x + (Chunk.CHUNK_WIDTH * 4)) || chunk.x < (player.x - (Chunk.CHUNK_WIDTH * 4)));
     // });
 }
 
@@ -182,7 +206,7 @@ function populateFirstChunk() {
 
 function generateChunk(coords) {
     const chunk = new Chunk(coords.x, coords.y);
-    chunk.draw(context);
+    // chunk.draw(context);
     chunks.push(chunk);
 }
 
@@ -234,24 +258,20 @@ function getPlayerOccupiedChunk() {
 function animate() {
     requestAnimationFrame(animate);
     context.clearRect(0, 0, canvas.width, canvas.height);
-    // context.fillStyle = 'black'
-    // context.fillRect(0, 0, canvas.width, canvas.height)
+
     chunks.forEach(chunk => {
         chunk.draw(context);
     });
+
     player.draw(context);
-    // spawnAsteroids(); TODO
-    // asteroids.forEach(asteroid => {
-    //     asteroid.draw(context);
-    // });
+
     projectiles.forEach(projectile => {
         projectile.update(context);
     });
 
-    removeFarAwayObjects();
     populateSurroundingChunks();
+    despawnDistantChunks();
 }
 
 populateFirstChunk();
-
 animate();
