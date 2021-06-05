@@ -21,6 +21,7 @@ const player = new Player(Math.round(canvas.width / 2), Math.round(canvas.height
 const asteroids = [];
 const projectiles = [];
 const chunks = [];
+const fragments = [];
 
 function spawnAsteroids()
 {
@@ -97,8 +98,8 @@ window.addEventListener('click', event => {
     console.log('fire!');
     const angle = Math.atan2(event.clientY - player.y, event.clientX - player.x)
     const velocity = {
-        x: Math.cos(angle),
-        y: Math.sin(angle)
+        x: Math.cos(angle) * 4,
+        y: Math.sin(angle) * 4
     }
     projectiles.push(
         new Projectile(
@@ -125,6 +126,9 @@ function scrollCanvasUp() {
     projectiles.forEach(projectile => {
         projectile.y++;
     });
+    fragments.forEach(fragment => {
+        fragment.y++;
+    });
 }
 
 function scrollCanvasDown() {
@@ -139,6 +143,9 @@ function scrollCanvasDown() {
     });
     projectiles.forEach(projectile => {
         projectile.y--;
+    });
+    fragments.forEach(fragment => {
+        fragment.y--;
     });
 }
 
@@ -155,6 +162,9 @@ function scrollCanvasLeft() {
     projectiles.forEach(projectile => {
         projectile.x++;
     });
+    fragments.forEach(fragment => {
+        fragment.x++;
+    });
 }
 
 function scrollCanvasRight() {
@@ -169,6 +179,9 @@ function scrollCanvasRight() {
     });
     projectiles.forEach(projectile => {
         projectile.x--;
+    });
+    fragments.forEach(fragment => {
+        fragment.x--;
     });
 }
 
@@ -187,16 +200,54 @@ function despawnDistantChunks() {
             }, 0);
         }
     }
-    // originalChunks.forEach((chunk, index) => {
-        // if (chunk.x > (player.x + (Chunk.CHUNK_WIDTH * 4)) || chunk.x < (player.x - (Chunk.CHUNK_WIDTH * 4))) {
-            // setTimeout(() => {
-            //     console.log(`player coords: ${player.x}, ${player.y}`);
-            //     console.log(`chunk coords: ${chunk.x}, ${chunk.y}`)
-            //     chunks.splice(index, 1);
-            // }, 0);
-        // }
-        //  return (chunk.x > (player.x + (Chunk.CHUNK_WIDTH * 4)) || chunk.x < (player.x - (Chunk.CHUNK_WIDTH * 4)));
-    // });
+}
+
+function despawnProjectilesOutsideChunks() {
+    // Copy the original array into a new object
+    const originalProjectiles = [...projectiles];
+
+    // loop backwards through the original array, splicing and updating as we go
+    for (let i = originalProjectiles.length - 1; i > -1; i--) {
+        let withinChunk = false;
+        // check every chunk to see if the projectile exists within it
+        for (let j = 0; j < chunks.length; j++) {
+            withinChunk = chunks[j].coordinatesAreWithinChunk(originalProjectiles[i].x, originalProjectiles[i].y);
+            if (withinChunk) {
+                break;
+            }            
+        }
+
+        // projectile was not in a chunk, remove it
+        if (!withinChunk) {
+            setTimeout(() => {
+                projectiles.splice(i, 1);
+            }, 0);
+        }
+    };
+}
+
+function despawnFragmentsOutsideChunks() {
+    // Copy the original array into a new object
+    const originalFragments = [...fragments];
+
+    // loop backwards through the original array, splicing and updating as we go
+    for (let i = originalFragments.length - 1; i > -1; i--) {
+        let withinChunk = false;
+        // check every chunk to see if the projectile exists within it
+        for (let j = 0; j < chunks.length; j++) {
+            withinChunk = chunks[j].coordinatesAreWithinChunk(originalFragments[i].x, originalFragments[i].y);
+            if (withinChunk) {
+                break;
+            }            
+        }
+
+        // projectile was not in a chunk, remove it
+        if (!withinChunk) {
+            setTimeout(() => {
+                fragments.splice(i, 1);
+            }, 0);
+        }
+    };
 }
 
 
@@ -213,6 +264,10 @@ function generateChunk(coords) {
 function populateSurroundingChunks() {
     // get the current chunk, figure out which chunk the player is in
     var currentChunk = getPlayerOccupiedChunk();
+
+    if (!currentChunk) {
+        console.log('Could not find current chunk!');
+    }
 
     // determine the coordinates of the surrounding chunks
     const surroundingChunkCoords = [];
@@ -261,6 +316,10 @@ function animate() {
 
     chunks.forEach(chunk => {
         chunk.draw(context);
+        const fragmentsToCreate = chunk.detectProjectileResourceCollisions(projectiles);
+        fragmentsToCreate.forEach(fragment => {
+            fragments.push(fragment);
+        });
     });
 
     player.draw(context);
@@ -269,8 +328,14 @@ function animate() {
         projectile.update(context);
     });
 
+    fragments.forEach(fragment => {
+        fragment.update(context);
+    });
+
     populateSurroundingChunks();
     despawnDistantChunks();
+    despawnProjectilesOutsideChunks();
+    despawnFragmentsOutsideChunks();
 }
 
 populateFirstChunk();
