@@ -13,13 +13,17 @@ export default class Chunk {
     // static CHUNK_WIDTH = 10000;
     // static CHUNK_HEIGHT = 10000;
 
-    constructor(x, y) {
+    constructor(x, y, mapX, mapY) {
         this.x = x;
         this.y = y;
+        this.mapX = mapX;
+        this.mapY = mapY;
+
         this.backgroundObjects = [];
         this.resources = [];
         this.populateBackgroundObjects();
         this.populateResources();
+
     }
 
     populateResources() {

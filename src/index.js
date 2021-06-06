@@ -1,4 +1,3 @@
-import Asteroid from "./asteroids";
 import Projectile from "./projectile";
 import Player from "./player";
 import Chunk from "./chunk";
@@ -18,20 +17,9 @@ window.onresize = reportWindowSize;
 
 
 const player = new Player(Math.round(canvas.width / 2), Math.round(canvas.height / 2), 30, 'blue');
-const asteroids = [];
 const projectiles = [];
 const chunks = [];
 const fragments = [];
-
-function spawnAsteroids()
-{
-    setInterval(() => {
-        if (asteroids.length < 5)
-        {
-            asteroids.push(new Asteroid(Math.random() * canvas.width, Math.random() * canvas.height, 60, 'red'))
-        }
-    }, 1000);
-}
 
 let wInterval;
 let aInterval;
@@ -252,11 +240,19 @@ function despawnFragmentsOutsideChunks() {
 
 
 function populateFirstChunk() {
-    chunks.push(new Chunk(player.x - (Chunk.CHUNK_WIDTH / 2), player.y - (Chunk.CHUNK_HEIGHT / 2)));
+    const coords = {
+        x: player.x - (Chunk.CHUNK_WIDTH / 2),
+        y: player.y - (Chunk.CHUNK_HEIGHT / 2),
+        mapX: 0,
+        mapY: 0
+    }
+    generateChunk(coords);
+    // chunks.push(new Chunk(player.x - (Chunk.CHUNK_WIDTH / 2), player.y - (Chunk.CHUNK_HEIGHT / 2), 0, 0));
 }
 
 function generateChunk(coords) {
-    const chunk = new Chunk(coords.x, coords.y);
+    const chunk = new Chunk(coords.x, coords.y, coords.mapX, coords.mapY);
+    console.log(chunk);
     // chunk.draw(context);
     chunks.push(chunk);
 }
@@ -272,21 +268,69 @@ function populateSurroundingChunks() {
     // determine the coordinates of the surrounding chunks
     const surroundingChunkCoords = [];
     //top left
-    surroundingChunkCoords.push({x: currentChunk.x - Chunk.CHUNK_WIDTH, y: currentChunk.y - Chunk.CHUNK_HEIGHT});
+    surroundingChunkCoords.push(
+        {
+            x: currentChunk.x - Chunk.CHUNK_WIDTH,
+            y: currentChunk.y - Chunk.CHUNK_HEIGHT,
+            mapX: currentChunk.mapX - 1,
+            mapY: currentChunk.mapY - 1
+        });
     //top middle
-    surroundingChunkCoords.push({x: currentChunk.x, y: currentChunk.y - Chunk.CHUNK_HEIGHT});
+    surroundingChunkCoords.push(
+        {
+            x: currentChunk.x,
+            y: currentChunk.y - Chunk.CHUNK_HEIGHT,
+            mapX: currentChunk.mapX,
+            mapY: currentChunk.mapY - 1
+        });
     //top right
-    surroundingChunkCoords.push({x: currentChunk.x + Chunk.CHUNK_WIDTH, y: currentChunk.y - Chunk.CHUNK_HEIGHT});
+    surroundingChunkCoords.push(
+        {
+            x: currentChunk.x + Chunk.CHUNK_WIDTH,
+            y: currentChunk.y - Chunk.CHUNK_HEIGHT,
+            mapX: currentChunk.mapX + 1,
+            mapY: currentChunk.mapY - 1
+        });
     // middle left
-    surroundingChunkCoords.push({x: currentChunk.x - Chunk.CHUNK_WIDTH, y: currentChunk.y});
+    surroundingChunkCoords.push(
+        {
+            x: currentChunk.x - Chunk.CHUNK_WIDTH,
+            y: currentChunk.y,
+            mapX: currentChunk.mapX - 1,
+            mapY: currentChunk.mapY
+        });
     // middle right
-    surroundingChunkCoords.push({x: currentChunk.x + Chunk.CHUNK_WIDTH, y: currentChunk.y});
+    surroundingChunkCoords.push(
+        {
+            x: currentChunk.x + Chunk.CHUNK_WIDTH,
+            y: currentChunk.y,
+            mapX: currentChunk.mapX + 1,
+            mapY: currentChunk.mapY
+        });
     // bottom left
-    surroundingChunkCoords.push({x: currentChunk.x - Chunk.CHUNK_WIDTH, y: currentChunk.y + Chunk.CHUNK_HEIGHT});
+    surroundingChunkCoords.push(
+        {
+            x: currentChunk.x - Chunk.CHUNK_WIDTH,
+            y: currentChunk.y + Chunk.CHUNK_HEIGHT,
+            mapX: currentChunk.mapX - 1,
+            mapY: currentChunk.mapY + 1
+        });
     // bottom middle
-    surroundingChunkCoords.push({x: currentChunk.x, y: currentChunk.y + Chunk.CHUNK_HEIGHT});
+    surroundingChunkCoords.push(
+        {
+            x: currentChunk.x,
+            y: currentChunk.y + Chunk.CHUNK_HEIGHT,
+            mapX: currentChunk.mapX,
+            mapY: currentChunk.mapY + 1
+        });
     // bottom right
-    surroundingChunkCoords.push({x: currentChunk.x + Chunk.CHUNK_WIDTH, y: currentChunk.y + Chunk.CHUNK_HEIGHT});
+    surroundingChunkCoords.push(
+        {
+            x: currentChunk.x + Chunk.CHUNK_WIDTH,
+            y: currentChunk.y + Chunk.CHUNK_HEIGHT,
+            mapX: currentChunk.mapX + 1,
+            mapY: currentChunk.mapY + 1
+        });
 
     // see if those are already generated
     const chunkCoordsToGenerate = [];
@@ -322,8 +366,6 @@ function animate() {
         });
     });
 
-    player.draw(context);
-
     projectiles.forEach(projectile => {
         projectile.update(context);
     });
@@ -336,6 +378,9 @@ function animate() {
     despawnDistantChunks();
     despawnProjectilesOutsideChunks();
     despawnFragmentsOutsideChunks();
+
+    // Draw player last, so it is always on top
+    player.draw(context);
 }
 
 populateFirstChunk();
