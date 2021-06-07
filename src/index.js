@@ -19,6 +19,7 @@ window.onresize = reportWindowSize;
 const player = new Player(Math.round(canvas.width / 2), Math.round(canvas.height / 2), 30, 'blue');
 const projectiles = [];
 const chunks = [];
+const savedChunks = [];
 const fragments = [];
 
 let wInterval;
@@ -177,12 +178,15 @@ function despawnDistantChunks() {
     const originalChunks = [...chunks];
     for (let i = originalChunks.length - 1; i > -1; i--) {
         if (chunks[i].x > (player.x + (Chunk.CHUNK_WIDTH * 3)) || chunks[i].x < (player.x - (Chunk.CHUNK_WIDTH * 3))) {
+            savedChunks.push(chunks[i]);
             setTimeout(() => {
                 chunks.splice(i, 1);
             }, 0);
+            continue;
         }
 
         if (chunks[i].y > (player.y + (Chunk.CHUNK_HEIGHT * 3)) || chunks[i].y < (player.y - (Chunk.CHUNK_HEIGHT * 3))) {
+            savedChunks.push(chunks[i]);
             setTimeout(() => {
                 chunks.splice(i, 1);
             }, 0);
@@ -245,14 +249,13 @@ function populateFirstChunk() {
         y: player.y - (Chunk.CHUNK_HEIGHT / 2),
         mapX: 0,
         mapY: 0
-    }
+    };
     generateChunk(coords);
-    // chunks.push(new Chunk(player.x - (Chunk.CHUNK_WIDTH / 2), player.y - (Chunk.CHUNK_HEIGHT / 2), 0, 0));
 }
 
 function generateChunk(coords) {
     const chunk = new Chunk(coords.x, coords.y, coords.mapX, coords.mapY);
-    console.log(chunk);
+    // console.log(chunk);
     // chunk.draw(context);
     chunks.push(chunk);
 }
@@ -332,20 +335,53 @@ function populateSurroundingChunks() {
             mapY: currentChunk.mapY + 1
         });
 
-    // see if those are already generated
+    // chunk coordinates to generate based on what has already been generated and what exists on the screen
     const chunkCoordsToGenerate = [];
-    surroundingChunkCoords.forEach(surrChunk => {
-        const chunkExists = chunks.find((chunk) => chunk.x == surrChunk.x && chunk.y == surrChunk.y);
-        if (chunkExists === undefined)
+
+    // List of chunks removed from memory and need to be loaded into the DOM
+    const chunksToLoadFromSaved = [];
+loop1:
+    for (let i = 0; i < surroundingChunkCoords.length; i++) {
+        
+        // Chunk doesnt exist in saved data, need to generate a chunk with these coords, push the coords
+        // into chunkCoordsToGenerate to generate later
+        const chunkExistsOnScreen = chunks.find((chunk) => chunk.x == surroundingChunkCoords[i].x && chunk.y == surroundingChunkCoords[i].y);
+        if (chunkExistsOnScreen)
         {
-            chunkCoordsToGenerate.push(surrChunk);
+            // No need to load, it already exists
+            continue;
         }
-    });
+loop2:
+        for (let j = 0; j < savedChunks.length; j++) {
+            // Chunk exists in the saved data, remove it from saved data, push it into chunksToLoadFromSaved to load later
+            if (savedChunks[j].mapX == surroundingChunkCoords[i].mapX && savedChunks[j].mapY == surroundingChunkCoords[i].mapY) {
+                // the screen x and y coords might have changed since it was saved, update them to be correct now.
+                const savedChunk = savedChunks[j];
+                savedChunk.x = surroundingChunkCoords[i].x;
+                savedChunk.y = surroundingChunkCoords[i].y;
+
+                chunksToLoadFromSaved.push(savedChunks[j]);
+                console.log(`loading saved chunk: ${savedChunks[j].mapX}, ${savedChunks[j].mapY}`)
+                savedChunks.splice(j, 1);
+                continue loop1;
+            }
+        }
+
+        chunkCoordsToGenerate.push(surroundingChunkCoords[i]);
+    }
 
     // generate any that do not exist
     chunkCoordsToGenerate.forEach(chunkCoordinates => {
         generateChunk(chunkCoordinates);
     });
+
+    chunksToLoadFromSaved.forEach(chunk => {
+        loadChunk(chunk);
+    });
+}
+
+function loadChunk(chunk) {
+    chunks.push(chunk);
 }
 
 function getPlayerOccupiedChunk() {

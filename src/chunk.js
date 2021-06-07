@@ -23,7 +23,6 @@ export default class Chunk {
         this.resources = [];
         this.populateBackgroundObjects();
         this.populateResources();
-
     }
 
     populateResources() {
