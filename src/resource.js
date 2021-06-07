@@ -4,15 +4,15 @@ import Fragment from "./fragment";
 export default class Resource {
     static IRON_RADIUS = 10;
     static ironResource(x, y) {
-        return new Resource(x, y, Resource.IRON_RADIUS, 'gray', 5, 10);
+        return new Resource(x, y, Resource.IRON_RADIUS, 'gray', 5, 10, 'iron');
     }
     
     static BRONZE_RADIUS = 20;
     static bronzeResource(x, y) {
-        return new Resource(x, y, Resource.BRONZE_RADIUS, 'brown', 10, 1);
+        return new Resource(x, y, Resource.BRONZE_RADIUS, 'brown', 10, 1, 'bronze');
     }
 
-    constructor(x, y, radius, color, resourceCount, durability) {
+    constructor(x, y, radius, color, resourceCount, durability, name) {
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -21,6 +21,7 @@ export default class Resource {
         this.resourceCount = resourceCount;
         this.availableResources = resourceCount;
         this.durability = durability;
+        this.name = name;
         this.hitCount = 0;
     }
 
@@ -50,7 +51,7 @@ export default class Resource {
             x: Math.cos(randomAngle) * 2,
             y: Math.sin(randomAngle) * 2
         }
-        const frag = new Fragment(this.getScreenX(parentChunk), this.getScreenY(parentChunk), 10, this.color, velocity);
+        const frag = new Fragment(this.getScreenX(parentChunk), this.getScreenY(parentChunk), 10, this.color, velocity, this.name);
         return frag;
     }
 

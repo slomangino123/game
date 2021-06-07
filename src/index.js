@@ -22,6 +22,11 @@ const chunks = [];
 const savedChunks = [];
 const fragments = [];
 
+let isScrollingUp = false;
+let isScrollingDown = false;
+let isScrollingLeft = false;
+let isScrollingRight = false;
+
 let wInterval;
 let aInterval;
 let sInterval;
@@ -69,27 +74,49 @@ window.addEventListener("keyup", event => {
     if (event.code === 'KeyW') { //w
       window.clearInterval(wInterval);
       wInterval = undefined;
+      isScrollingUp = false;
     }
     if (event.code === 'KeyA') { //a
         window.clearInterval(aInterval);
         aInterval = undefined;
+        isScrollingLeft = false;
     }
     if (event.code === 'KeyS') { //s
         window.clearInterval(sInterval);
         sInterval = undefined;
+        isScrollingDown = false;
     }
     if (event.code === 'KeyD') { //d
         window.clearInterval(dInterval);
         dInterval = undefined;
+        isScrollingRight = false;
     }
 });
 window.addEventListener('click', event => {
-    console.log('fire!');
-    const angle = Math.atan2(event.clientY - player.y, event.clientX - player.x)
+    const angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
+    console.log(`Fire! ${angle}`);
+
+    const speedMultiplier = 6;
+
     const velocity = {
-        x: Math.cos(angle) * 4,
-        y: Math.sin(angle) * 4
+        x: Math.cos(angle) * speedMultiplier,
+        y: Math.sin(angle) * speedMultiplier,
     }
+
+    if (isScrollingUp) {
+        velocity.y -= 1;
+    }
+    if (isScrollingDown) {
+        velocity.y += 1;
+    }
+    if (isScrollingLeft) {
+        velocity.x -= 1;
+    }
+    if (isScrollingRight) {
+        velocity.x += 1
+    }
+
+    console.log(velocity)
     projectiles.push(
         new Projectile(
             player.x,
@@ -103,6 +130,7 @@ window.addEventListener('click', event => {
 
 
 function scrollCanvasUp() {
+    isScrollingUp = true;
     chunks.forEach(chunk => {
         chunk.y++;
     });
@@ -115,6 +143,7 @@ function scrollCanvasUp() {
 }
 
 function scrollCanvasDown() {
+    isScrollingDown = true;
     chunks.forEach(chunk => {
         chunk.y--;
     });
@@ -127,6 +156,7 @@ function scrollCanvasDown() {
 }
 
 function scrollCanvasLeft() {
+    isScrollingLeft = true;
     chunks.forEach(chunk => {
         chunk.x++;
     });
@@ -139,6 +169,7 @@ function scrollCanvasLeft() {
 }
 
 function scrollCanvasRight() {
+    isScrollingRight = true;
     chunks.forEach(chunk => {
         chunk.x--;
     });
@@ -365,6 +396,20 @@ function getPlayerOccupiedChunk() {
     return occupiedChunk;
 }
 
+function collectNearbyFragments() {
+    for (let i = fragments.length - 1; i > -1; i--) {
+        const fragment = fragments[i];
+        const distanceToPlayer = Math.hypot(fragment.x - player.x, fragment.y - player.y);
+        if (distanceToPlayer < 10) {
+            player.collectFragment(fragment);
+            
+            setTimeout(() => {
+                fragments.splice(i, 1);
+            }, 0);
+        }
+    }
+}
+
 
 function animate() {
     requestAnimationFrame(animate);
@@ -379,17 +424,19 @@ function animate() {
     });
 
     projectiles.forEach(projectile => {
+        console.log(projectile.isScrolling)
         projectile.update(context);
     });
 
     fragments.forEach(fragment => {
-        fragment.update(context);
+        fragment.update(context, player);
     });
 
     populateSurroundingChunks();
     despawnDistantChunks();
     despawnProjectilesOutsideChunks();
     despawnFragmentsOutsideChunks();
+    collectNearbyFragments();
 
     // Draw player last, so it is always on top
     player.draw(context);

@@ -5,6 +5,24 @@ export default class Player {
         this.y = y;
         this.radius = radius;
         this.color = color;
+        this.inventory = [
+            {
+                resource: 'iron',
+                quantity: 0
+            },
+            {
+                resource: 'bronze',
+                quantity: 0
+            },
+        ];
+    }
+
+    collectFragment(fragment) {
+        console.log(`Inventory consumed: ${fragment.name}`)
+        const targetInventory = this.inventory.find((inventoryItem) => inventoryItem.resource == fragment.name);
+        targetInventory.quantity++;
+
+        console.log(this.inventory);
     }
 
     draw(context) {

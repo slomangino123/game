@@ -35,7 +35,7 @@ export default class Chunk {
         }
 
         // spawn bronze
-        if (chance > .5) {
+        if (chance > .7) {
             var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Resource.BRONZE_RADIUS);
             const resource = Resource.bronzeResource(coordsWithinChunk.x, coordsWithinChunk.y);
             this.resources.push(resource);

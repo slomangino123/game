@@ -17,8 +17,8 @@ export default class Projectile {
     }
 
     update(context) {
-        this.draw(context);
         this.x = this.x + this.velocity.x;
         this.y = this.y + this.velocity.y;
+        this.draw(context);
     }
 }
