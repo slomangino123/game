@@ -17,7 +17,15 @@ export default class BackgroundObject {
         this.spikes = (Math.round(Math.random() * 6)) + 3;
     }
 
-    draw(context) {
+    getScreenX(parentChunk) {
+        return this.x + parentChunk.x;
+    }
+
+    getScreenY(parentChunk) {
+        return this.y + parentChunk.y;
+    }
+
+    draw(context, parentChunk) {
         if (this.count % this.colorChangeRate === 0) { // change colour ?
             // colour is a gaussian distrabution (NOT random) centered at #888
             var c = (Math.random() + Math.random() + Math.random() + Math.random()) * 4;
@@ -39,27 +47,27 @@ export default class BackgroundObject {
         // context.fillRect(this.x + ox, this.y + oy, this.radius, this.radius);
 
         var rot = Math.PI / 2 * 3;
-        var x = this.x;
-        var y = this.y;
+        var x = this.getScreenX(parentChunk);
+        var y = this.getScreenY(parentChunk);
         var step = Math.PI / this.spikes;
         var outerRadius = this.radius + 1;
         var innerRadius = this.radius;
 
         context.strokeSyle = "#000";
         context.beginPath();
-        context.moveTo(this.x, this.y - outerRadius)
+        context.moveTo(this.getScreenX(parentChunk), this.getScreenY(parentChunk) - outerRadius)
         for (let i = 0; i < this.spikes; i++) {
-            x = this.x + Math.cos(rot) * outerRadius;
-            y = this.y + Math.sin(rot) * outerRadius;
+            x = this.getScreenX(parentChunk) + Math.cos(rot) * outerRadius;
+            y = this.getScreenY(parentChunk) + Math.sin(rot) * outerRadius;
             context.lineTo(x, y)
             rot += step
 
-            x = this.x + Math.cos(rot) * innerRadius;
-            y = this.y + Math.sin(rot) * innerRadius;
+            x = this.getScreenX(parentChunk) + Math.cos(rot) * innerRadius;
+            y = this.getScreenY(parentChunk) + Math.sin(rot) * innerRadius;
             context.lineTo(x, y)
             rot += step
         }
-        context.lineTo(this.x, this.y - outerRadius)
+        context.lineTo(this.getScreenX(parentChunk), this.getScreenY(parentChunk) - outerRadius)
         context.closePath();
         // context.lineWidth=5;
         // context.strokeStyle='blue';

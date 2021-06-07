@@ -29,22 +29,30 @@ export default class Chunk {
         var chance = Math.random();
         // spawn iron
         if (chance < .1) {
-            var coordsWithinChunk = this.getRandomCoordinatesWithinChunk(Resource.IRON_RADIUS);
+            var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Resource.IRON_RADIUS);
             const obj = Resource.ironResource(coordsWithinChunk.x, coordsWithinChunk.y);
             this.resources.push(obj);
         }
 
         // spawn bronze
-        if (chance > .95) {
-            var coordsWithinChunk = this.getRandomCoordinatesWithinChunk(Resource.BRONZE_RADIUS);
+        if (chance > .5) {
+            var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Resource.BRONZE_RADIUS);
             const resource = Resource.bronzeResource(coordsWithinChunk.x, coordsWithinChunk.y);
             this.resources.push(resource);
         }
     }
+
+    getRandomCoordinatesInChunkWithRespectToChunkCoordinates(radius) {
+        // basically creates an inner radius for the chunk so that nothing can spawn too close to the edge and risk getting cut off
+        // when another chunk generates next to the current chunk.
+        const x = (Math.random() * (Chunk.CHUNK_WIDTH - (radius * 2))) + radius;
+        const y = (Math.random() * (Chunk.CHUNK_HEIGHT - (radius * 2))) + radius;
+        return {x: x, y: y};
+    }
     
     populateBackgroundObjects() {
         var numberOfObjects = Math.random() * 20;
-        var coordsWithinChunk = this.getRandomCoordinatesWithinChunk(3);
+        var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(3);
         for (let i = 0; i < numberOfObjects; i++) {
             const obj = new BackgroundObject(coordsWithinChunk.x, coordsWithinChunk.y, Math.random() * 2, 'white');
             this.backgroundObjects.push(obj);
@@ -70,10 +78,12 @@ export default class Chunk {
         const projectilesCopy = [...projectiles];
         const fragmentsToCreate = [];
         for (let i = resourcesCopy.length - 1; i > -1; i--) {
+            const currentResource = resourcesCopy[i];
             for (let j = projectilesCopy.length - 1; j > -1; j--) {
-                const distance = Math.hypot(projectilesCopy[j].x - resourcesCopy[i].x, projectilesCopy[j].y - resourcesCopy[i].y);
-                if (distance - resourcesCopy[i].radius - projectilesCopy[j].radius < 1) {
-                    const frag = resourcesCopy[i].mine(projectilesCopy[j].damage);
+                const currentProjectile = projectilesCopy[j];
+                const distance = Math.hypot(currentProjectile.x - currentResource.getScreenX(this), currentProjectile.y - currentResource.getScreenY(this));
+                if (distance - currentResource.radius - currentProjectile.radius < 1) {
+                    const frag = currentResource.mine(currentProjectile.damage, this);
                     setTimeout(() => {
                         projectiles.splice(j, 1);
                     }, 0);
@@ -105,12 +115,12 @@ export default class Chunk {
         context.fillRect(this.x, this.y, Chunk.CHUNK_WIDTH, Chunk.CHUNK_HEIGHT);
         
         this.backgroundObjects.forEach(obj => {
-            obj.draw(context);
+            obj.draw(context, this);
         });
 
         this.despawnResourcesWithRadiusZero();
         this.resources.forEach(obj => {
-            obj.draw(context);
+            obj.draw(context, this);
         });
     }
 }

@@ -105,12 +105,6 @@ window.addEventListener('click', event => {
 function scrollCanvasUp() {
     chunks.forEach(chunk => {
         chunk.y++;
-        chunk.backgroundObjects.forEach(obj => {
-            obj.y++;
-        });
-        chunk.resources.forEach(obj => {
-            obj.y++;
-        });
     });
     projectiles.forEach(projectile => {
         projectile.y++;
@@ -123,12 +117,6 @@ function scrollCanvasUp() {
 function scrollCanvasDown() {
     chunks.forEach(chunk => {
         chunk.y--;
-        chunk.backgroundObjects.forEach(obj => {
-            obj.y--;
-        });
-        chunk.resources.forEach(obj => {
-            obj.y--;
-        });
     });
     projectiles.forEach(projectile => {
         projectile.y--;
@@ -141,12 +129,6 @@ function scrollCanvasDown() {
 function scrollCanvasLeft() {
     chunks.forEach(chunk => {
         chunk.x++;
-        chunk.backgroundObjects.forEach(obj => {
-            obj.x++;
-        });
-        chunk.resources.forEach(obj => {
-            obj.x++;
-        });
     });
     projectiles.forEach(projectile => {
         projectile.x++;
@@ -159,12 +141,6 @@ function scrollCanvasLeft() {
 function scrollCanvasRight() {
     chunks.forEach(chunk => {
         chunk.x--;
-        chunk.backgroundObjects.forEach(obj => {
-            obj.x--;
-        });
-        chunk.resources.forEach(obj => {
-            obj.x--;
-        });
     });
     projectiles.forEach(projectile => {
         projectile.x--;

@@ -24,7 +24,7 @@ export default class Resource {
         this.hitCount = 0;
     }
 
-    mine(damage) {
+    mine(damage, parentChunk) {
         if (this.availableResources <= 0)
         {
             return;
@@ -34,14 +34,14 @@ export default class Resource {
         {
             this.hitCount++;
             if (this.hitCount % this.durability == 0) {
-                const frag = this.releaseFragment();
+                const frag = this.releaseFragment(parentChunk);
                 this.decreaseSize();
                 return frag;
             }
         }
     }
 
-    releaseFragment() {
+    releaseFragment(parentChunk) {
         this.availableResources--;
 
         var randomAngle = Math.random() * (Math.PI * 2);
@@ -50,7 +50,7 @@ export default class Resource {
             x: Math.cos(randomAngle) * 2,
             y: Math.sin(randomAngle) * 2
         }
-        const frag = new Fragment(this.x, this.y, 10, this.color, velocity);
+        const frag = new Fragment(this.getScreenX(parentChunk), this.getScreenY(parentChunk), 10, this.color, velocity);
         return frag;
     }
 
@@ -60,9 +60,17 @@ export default class Resource {
         this.radius = this.startingRadius * percentResourcesLeft;
     }
 
-    draw(context) {
+    getScreenX(parentChunk) {
+        return this.x + parentChunk.x;
+    }
+
+    getScreenY(parentChunk) {
+        return this.y + parentChunk.y;
+    }
+
+    draw(context, parentChunk) {
         context.beginPath();
-        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        context.arc(this.getScreenX(parentChunk), this.getScreenY(parentChunk), this.radius, 0, Math.PI * 2, false);
         context.fillStyle = this.color;
         context.fill();
     }
