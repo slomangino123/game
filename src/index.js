@@ -22,6 +22,9 @@ const chunks = [];
 const savedChunks = [];
 const fragments = [];
 
+CHUNK_HEIGHT = 200;
+CHUNK_WIDTH = 200;
+
 let isScrollingUp = false;
 let isScrollingDown = false;
 let isScrollingLeft = false;
