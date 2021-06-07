@@ -116,7 +116,6 @@ window.addEventListener('click', event => {
         velocity.x += 1
     }
 
-    console.log(velocity)
     projectiles.push(
         new Projectile(
             player.x,
@@ -262,8 +261,6 @@ function populateFirstChunk() {
 
 function generateChunk(coords) {
     const chunk = new Chunk(coords.x, coords.y, coords.mapX, coords.mapY);
-    // console.log(chunk);
-    // chunk.draw(context);
     chunks.push(chunk);
 }
 
@@ -368,7 +365,7 @@ loop2:
                 savedChunk.y = surroundingChunkCoords[i].y;
 
                 chunksToLoadFromSaved.push(savedChunks[j]);
-                console.log(`loading saved chunk: ${savedChunks[j].mapX}, ${savedChunks[j].mapY}`)
+                // console.log(`loading saved chunk: ${savedChunks[j].mapX}, ${savedChunks[j].mapY}`)
                 savedChunks.splice(j, 1);
                 continue loop1;
             }
@@ -424,7 +421,6 @@ function animate() {
     });
 
     projectiles.forEach(projectile => {
-        console.log(projectile.isScrolling)
         projectile.update(context);
     });
 
