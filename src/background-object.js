@@ -8,7 +8,7 @@ export default class BackgroundObject {
         this.y = y;
         this.radius = radius;
         this.color = '#ccc';
-        this.colorChangeRate = 100;
+        this.colorChangeRate = 1000;
         this.count = 0;
         this.red = 1-(rand(1) * rand(1) *rand(1));  // reduces colour channels
         this.green = 1-(rand(1) * rand(1) *rand(1)); // but only by a very small amount
@@ -42,9 +42,6 @@ export default class BackgroundObject {
         // move star around  a pixel. Again its not random
         // but a gaussian distrabution. The movement is sub pixel and will only
         // make the stars brightness vary not look like its moving
-        var ox = (Math.random() + Math.random() + Math.random() + Math.random()) / 4;
-        var oy = (Math.random() + Math.random() + Math.random() + Math.random()) / 4;
-        // context.fillRect(this.x + ox, this.y + oy, this.radius, this.radius);
 
         var rot = Math.PI / 2 * 3;
         var x = this.getScreenX(parentChunk);

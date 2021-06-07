@@ -8,11 +8,32 @@
             body {
                 margin: 0;
             }
-        </style></head>
-    <body>
+        </style>
+        <script>
             
-        <canvas id="canvas"></canvas>
+            // Get HTML head element
+            var head = document.getElementsByTagName('HEAD')[0]; 
+    
+            // Create new link Element
+            var link = document.createElement('link');
+    
+            // set the attributes for link element 
+            link.rel = 'stylesheet'; 
+        
+            link.type = 'text/css';
+        
+            link.href = 'style.css'; 
+    
+            // Append link element to HTML head
+            head.appendChild(link); 
+        </script> 
+    </head>
+    <body>
+        <div class="stars"></div>
+        <div class="twinkling"></div>
+        <canvas id="canvas" class="game-canvas"></canvas>
         <!-- <script src="index.js" type="module"></script> -->
         <script src="main.js"></script> 
+        <div ></div>
     </body>
 </html>

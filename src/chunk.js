@@ -2,16 +2,10 @@ import BackgroundObject from "./background-object";
 import Resource from "./resource";
 
 export default class Chunk {
-    // static CHUNK_WIDTH = 100;
-    // static CHUNK_HEIGHT = 100;
-    static CHUNK_WIDTH = 200;
-    static CHUNK_HEIGHT = 200;
-    // static CHUNK_WIDTH = 300;
-    // static CHUNK_HEIGHT = 300;
-    // static CHUNK_WIDTH = 400;
-    // static CHUNK_HEIGHT = 400;
-    // static CHUNK_WIDTH = 10000;
-    // static CHUNK_HEIGHT = 10000;
+    // static CHUNK_WIDTH = 200;
+    // static CHUNK_HEIGHT = 200;
+    static CHUNK_WIDTH = 10000;
+    static CHUNK_HEIGHT = 10000;
 
     constructor(x, y, mapX, mapY) {
         this.x = x;
@@ -51,20 +45,13 @@ export default class Chunk {
     }
     
     populateBackgroundObjects() {
-        var numberOfObjects = Math.random() * 20;
+        var numberOfObjects = Chunk.CHUNK_HEIGHT * Chunk.CHUNK_WIDTH * 0;
+        console.log(numberOfObjects);
         var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(3);
         for (let i = 0; i < numberOfObjects; i++) {
             const obj = new BackgroundObject(coordsWithinChunk.x, coordsWithinChunk.y, Math.random() * 2, 'white');
             this.backgroundObjects.push(obj);
         }
-    }
-
-    getRandomCoordinatesWithinChunk(radius) {
-        // basically creates an inner radius for the chunk so that nothing can spawn too close to the edge and risk getting cut off
-        // when another chunk generates next to the current chunk.
-        const x = (Math.random() * (((this.x + Chunk.CHUNK_WIDTH) - radius) - (this.x + radius))) + this.x + radius;
-        const y = (Math.random() * (((this.y + Chunk.CHUNK_HEIGHT) - radius) - (this.y + radius))) + this.y + radius;
-        return {x: x, y: y};
     }
 
     coordinatesAreWithinChunk(x, y) {
@@ -110,9 +97,9 @@ export default class Chunk {
     }
 
     draw(context) {
-        context.clearRect(this.x, this.y, Chunk.CHUNK_WIDTH, Chunk.CHUNK_HEIGHT);
-        context.fillStyle = 'black';
-        context.fillRect(this.x, this.y, Chunk.CHUNK_WIDTH, Chunk.CHUNK_HEIGHT);
+        // context.clearRect(this.x, this.y, Chunk.CHUNK_WIDTH, Chunk.CHUNK_HEIGHT);
+        // context.fillStyle = 'black';
+        // context.fillRect(this.x, this.y, Chunk.CHUNK_WIDTH, Chunk.CHUNK_HEIGHT);
         
         this.backgroundObjects.forEach(obj => {
             obj.draw(context, this);
