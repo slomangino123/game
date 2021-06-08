@@ -4,14 +4,14 @@ import Resource from "./resource";
 export default class Chunk {
     // static CHUNK_WIDTH = 200;
     // static CHUNK_HEIGHT = 200;
-    static CHUNK_WIDTH = 10000;
-    static CHUNK_HEIGHT = 10000;
 
-    constructor(x, y, mapX, mapY) {
+    constructor(x, y, mapX, mapY, chunkWidth, chunkHeight) {
         this.x = x;
         this.y = y;
         this.mapX = mapX;
         this.mapY = mapY;
+        this.chunkWidth = chunkWidth;
+        this.chunkHeight = chunkHeight;
 
         this.backgroundObjects = [];
         this.resources = [];
@@ -20,33 +20,40 @@ export default class Chunk {
     }
 
     populateResources() {
-        var chance = Math.random();
-        // spawn iron
-        if (chance < .1) {
-            var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Resource.IRON_RADIUS);
-            const obj = Resource.ironResource(coordsWithinChunk.x, coordsWithinChunk.y);
-            this.resources.push(obj);
+        for (let i = 0; i < 15; i++) {
+            var chance = Math.random();
+
+            // spawn iron
+            if (chance < .1) {
+                var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Resource.IRON_RADIUS);
+                const obj = Resource.ironResource(coordsWithinChunk.x, coordsWithinChunk.y);
+                this.resources.push(obj);
+            }
         }
 
-        // spawn bronze
-        if (chance > .7) {
-            var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Resource.BRONZE_RADIUS);
-            const resource = Resource.bronzeResource(coordsWithinChunk.x, coordsWithinChunk.y);
-            this.resources.push(resource);
+        for (let i = 0; i < 10; i++) {
+            var chance = Math.random();
+
+            // spawn bronze
+            if (chance > .7) {
+                var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Resource.BRONZE_RADIUS);
+                const resource = Resource.bronzeResource(coordsWithinChunk.x, coordsWithinChunk.y);
+                this.resources.push(resource);
+            }
         }
+
     }
 
     getRandomCoordinatesInChunkWithRespectToChunkCoordinates(radius) {
         // basically creates an inner radius for the chunk so that nothing can spawn too close to the edge and risk getting cut off
         // when another chunk generates next to the current chunk.
-        const x = (Math.random() * (Chunk.CHUNK_WIDTH - (radius * 2))) + radius;
-        const y = (Math.random() * (Chunk.CHUNK_HEIGHT - (radius * 2))) + radius;
+        const x = (Math.random() * (this.chunkWidth - (radius * 2))) + radius;
+        const y = (Math.random() * (this.chunkHeight - (radius * 2))) + radius;
         return {x: x, y: y};
     }
     
     populateBackgroundObjects() {
-        var numberOfObjects = Chunk.CHUNK_HEIGHT * Chunk.CHUNK_WIDTH * 0;
-        console.log(numberOfObjects);
+        var numberOfObjects = this.chunkHeight * this.chunkWidth * 0;
         var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(3);
         for (let i = 0; i < numberOfObjects; i++) {
             const obj = new BackgroundObject(coordsWithinChunk.x, coordsWithinChunk.y, Math.random() * 2, 'white');
@@ -55,8 +62,8 @@ export default class Chunk {
     }
 
     coordinatesAreWithinChunk(x, y) {
-        const withinX = x >= this.x && x <= (this.x + Chunk.CHUNK_WIDTH);
-        const withinY = y >= this.y && y <= (this.y + Chunk.CHUNK_HEIGHT);
+        const withinX = x >= this.x && x <= (this.x + this.chunkWidth);
+        const withinY = y >= this.y && y <= (this.y + this.chunkHeight);
         return withinX && withinY;
     }
 
@@ -97,12 +104,12 @@ export default class Chunk {
     }
 
     draw(context) {
-        // context.clearRect(this.x, this.y, Chunk.CHUNK_WIDTH, Chunk.CHUNK_HEIGHT);
+        // context.clearRect(this.x, this.y, this.chunkWidth, this.chunkHeight);
         // context.fillStyle = 'black';
-        // context.fillRect(this.x, this.y, Chunk.CHUNK_WIDTH, Chunk.CHUNK_HEIGHT);
+        // context.fillRect(this.x, this.y, this.chunkWidth, this.chunkHeight);
         
         this.backgroundObjects.forEach(obj => {
-            obj.draw(context, this);
+            obj.draw_v1(context, this);
         });
 
         this.despawnResourcesWithRadiusZero();

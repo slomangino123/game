@@ -31,9 +31,23 @@
     <body>
         <div class="stars"></div>
         <div class="twinkling"></div>
+        <!-- <div class="clouds"></div> -->
         <canvas id="canvas" class="game-canvas"></canvas>
         <!-- <script src="index.js" type="module"></script> -->
         <script src="main.js"></script> 
-        <div ></div>
+        
+        <div id="inventory" class="inventory-dialog">
+            <div class="dialog-container">
+                <h1 class="header">Inventory</h1>
+                <div>
+                    <span>Bronze:</span>
+                    <span id="bronze-count" class="right">0</span>
+                </div>
+                <div>
+                    <span>Iron:</span>
+                    <span id="iron-count" class="right">0</span>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

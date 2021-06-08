@@ -17,9 +17,14 @@ export default class Player {
         ];
     }
 
-    collectFragment(fragment) {
+    collectFragment(fragment, inventoryElements) {
         const targetInventory = this.inventory.find((inventoryItem) => inventoryItem.resource == fragment.name);
         targetInventory.quantity++;
+        const inventoryElement = inventoryElements.find((element) => element.itemName == fragment.name);
+        if (inventoryElement) {
+            inventoryElement.element.innerHTML = targetInventory.quantity;
+        }
+
     }
 
     draw(context) {

@@ -7,7 +7,7 @@ export default class Resource {
         return new Resource(x, y, Resource.IRON_RADIUS, 'gray', 5, 10, 'iron');
     }
     
-    static BRONZE_RADIUS = 20;
+    static BRONZE_RADIUS = 50;
     static bronzeResource(x, y) {
         return new Resource(x, y, Resource.BRONZE_RADIUS, 'brown', 10, 1, 'bronze');
     }
@@ -58,7 +58,15 @@ export default class Resource {
     decreaseSize() {
         // reduce size a percentage of how many resources were removed.
         var percentResourcesLeft = this.availableResources / this.resourceCount;
-        this.radius = this.startingRadius * percentResourcesLeft;
+        this.radius = (this.startingRadius) * percentResourcesLeft;
+        if (this.radius === 0) {
+            return;
+        }
+
+        if (this.radius < 10)
+        {
+            this.radius = 10;
+        }
     }
 
     getScreenX(parentChunk) {

@@ -116,3 +116,36 @@ header a, a:visited {
   -webkit-animation:move-clouds-back 200s linear infinite;
   animation:move-clouds-back 200s linear infinite;
 }
+
+.inventory-dialog {
+    z-index: 6;
+    position: fixed;
+    align-items: center;
+    display: flex;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    user-select: none;
+}
+
+#inventory {
+    visibility: hidden;
+}
+
+.dialog-container {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    color: gray;
+    min-width: 150px;
+    margin-left: 20px;
+    font-size: 18px;
+}
+
+.dialog-container .header {
+    color: gray;
+}
+
+.right {
+    float: right;
+}

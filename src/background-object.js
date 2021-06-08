@@ -25,6 +25,13 @@ export default class BackgroundObject {
         return this.y + parentChunk.y;
     }
 
+    draw_v1(context, parentChunk) {
+        context.beginPath();
+        context.arc(this.getScreenX(parentChunk), this.getScreenY(parentChunk), this.radius, 0, Math.PI * 2, false);
+        context.fillStyle = this.color;
+        context.fill();
+    }
+
     draw(context, parentChunk) {
         if (this.count % this.colorChangeRate === 0) { // change colour ?
             // colour is a gaussian distrabution (NOT random) centered at #888
