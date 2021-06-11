@@ -1,6 +1,7 @@
 import Projectile from "./projectile";
 import Player from "./player";
 import Chunk from "./chunk";
+import Layer from "./layer";
 
 window.onload = function() {
     let canvas = document.getElementById('canvas');
@@ -10,8 +11,6 @@ window.onload = function() {
     
     const CHUNK_HEIGHT = canvas.height;
     const CHUNK_WIDTH = canvas.width;
-    // const CHUNK_HEIGHT = 200;
-    // const CHUNK_WIDTH = 200;
     
     function reportWindowSize() {
         canvas.height = innerHeight;
@@ -21,6 +20,14 @@ window.onload = function() {
     }
     
     window.onresize = reportWindowSize;
+
+    let mouseX = 0;
+    let mouseY = 0;
+
+    window.addEventListener('mousemove', event => {
+        mouseX = event.x;
+        mouseY = event.y;
+    });
     
     const inventoryElement = document.getElementById('inventory');
     const bronzeCountElement = document.getElementById('bronze-count');
@@ -48,6 +55,12 @@ window.onload = function() {
     let isScrollingDown = false;
     let isScrollingLeft = false;
     let isScrollingRight = false;
+
+    const backgroundImage1 = new Image();
+    backgroundImage1.src = 'stars.png';
+    
+    const backgroundLayer1 = new Layer(0, 0, canvas.width, canvas.height, backgroundImage1, .2);
+    console.log(backgroundLayer1);
     
     let wInterval;
     let aInterval;
@@ -121,11 +134,11 @@ window.onload = function() {
             isScrollingRight = false;
         }
     });
-    window.addEventListener('click', event => {
-        const angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
-        console.log(`Fire! ${angle}`);
-    
-        const speedMultiplier = 6;
+    function fireProjectile() {
+        const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
+        // console.log(`Fire! ${angle}`);
+
+        const speedMultiplier = 10;
     
         const velocity = {
             x: Math.cos(angle) * speedMultiplier,
@@ -151,13 +164,26 @@ window.onload = function() {
                 player.y,
                 5,
                 'red',
-                velocity)
-            )
+                velocity))
+    }
+    let fireInterval = undefined;
+    window.addEventListener('mousedown', event => {
+        fireInterval = setInterval(() =>
+        {
+            fireProjectile(event);
+        }, 100)
+    });
+    window.addEventListener('mouseup', event => {
+        clearInterval(fireInterval);
+    });
+    
+    window.addEventListener('click', event => {
+        fireProjectile(event);
     });
     
     
-    
     function scrollCanvasUp() {
+        backgroundLayer1.scrollUp();
         isScrollingUp = true;
         chunks.forEach(chunk => {
             chunk.y++;
@@ -171,6 +197,7 @@ window.onload = function() {
     }
     
     function scrollCanvasDown() {
+        backgroundLayer1.scrollDown();
         isScrollingDown = true;
         chunks.forEach(chunk => {
             chunk.y--;
@@ -184,6 +211,7 @@ window.onload = function() {
     }
     
     function scrollCanvasLeft() {
+        backgroundLayer1.scrollLeft();
         isScrollingLeft = true;
         chunks.forEach(chunk => {
             chunk.x++;
@@ -197,6 +225,7 @@ window.onload = function() {
     }
     
     function scrollCanvasRight() {
+        backgroundLayer1.scrollRight();
         isScrollingRight = true;
         chunks.forEach(chunk => {
             chunk.x--;
@@ -438,11 +467,15 @@ window.onload = function() {
         }
     }
     
-    
     function animate() {
         requestAnimationFrame(animate);
         context.clearRect(0, 0, canvas.width, canvas.height);
-    
+        context.fillStyle= 'black';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw Background
+        backgroundLayer1.draw(context);
+
         chunks.forEach(chunk => {
             chunk.draw(context);
             const fragmentsToCreate = chunk.detectProjectileResourceCollisions(projectiles);
