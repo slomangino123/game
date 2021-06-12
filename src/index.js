@@ -136,7 +136,7 @@ window.onload = function() {
     });
     function fireProjectile() {
         const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
-        // console.log(`Fire! ${angle}`);
+        console.log(`Fire! ${angle}`);
 
         const speedMultiplier = 10;
     
@@ -157,11 +157,14 @@ window.onload = function() {
         if (isScrollingRight) {
             velocity.x += 1
         }
+
+        const x = Math.cos(angle) * 20;
+        const y = Math.sin(angle) * 20;
     
         projectiles.push(
             new Projectile(
-                player.x,
-                player.y,
+                player.x + x,
+                player.y + y,
                 5,
                 'red',
                 velocity))
@@ -499,7 +502,7 @@ window.onload = function() {
         collectNearbyFragments();
     
         // Draw player last, so it is always on top
-        player.draw(context);
+        player.draw(context, mouseX, mouseY);
     }
     
     populateFirstChunk();
