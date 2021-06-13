@@ -76,13 +76,15 @@ export default class Chunk {
                 const currentProjectile = projectilesCopy[j];
                 const distance = Math.hypot(currentProjectile.x - currentResource.getScreenX(this), currentProjectile.y - currentResource.getScreenY(this));
                 if (distance - currentResource.radius - currentProjectile.radius < 1) {
-                    const frag = currentResource.mine(currentProjectile.damage, this);
+                    const frags = currentResource.mine(currentProjectile.damage, this);
                     setTimeout(() => {
                         projectiles.splice(j, 1);
                     }, 0);
 
-                    if (frag) {
-                        fragmentsToCreate.push(frag);
+                    if (frags.length > 0) {
+                        for (let k = 0; k < frags.length; k++) {
+                            fragmentsToCreate.push(frags[k]);                            
+                        }
                     }
                 }
             }

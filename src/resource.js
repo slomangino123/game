@@ -31,15 +31,18 @@ export default class Resource {
             return;
         }
 
+        const fragmentsToCreate = [];
         for (damage; damage > 0; damage--)
         {
             this.hitCount++;
             if (this.hitCount % this.durability == 0) {
                 const frag = this.releaseFragment(parentChunk);
                 this.decreaseSize();
-                return frag;
+                fragmentsToCreate.push(frag);
             }
         }
+
+        return fragmentsToCreate;
     }
 
     releaseFragment(parentChunk) {

@@ -33,11 +33,25 @@
         <div class="twinkling"></div> -->
         <!-- <div class="clouds"></div> -->
         <canvas id="canvas" class="game-canvas"></canvas>
-        <!-- <script src="index.js" type="module"></script> -->
-        <script src="main.js"></script> 
         
         <div id="inventory" class="inventory-dialog">
             <div class="dialog-container">
+                <h1 class="header">Player</h1>
+                <div>
+                    <span>Movement:</span>
+                    <span id="movement" class="right">0</span>
+                </div>
+                <div>
+                    <h3 class="weapons">Weapons</h3>
+                    <div>
+                        <span class="sub-item">Speed:</span>
+                        <span id="weapon-speed" class="right">0</span>
+                    </div>
+                    <div>
+                        <span class="sub-item">Damage:</span>
+                        <span id="weapon-damage" class="right">0</span>
+                    </div>
+                </div>
                 <h1 class="header">Inventory</h1>
                 <div>
                     <span>Bronze:</span>
@@ -49,5 +63,26 @@
                 </div>
             </div>
         </div>
+        <div id="shop" class="shop-dialog">
+            <div class="shop-dialog-container">
+                <h2>Shop</h2>
+                <div class="individual-shops">
+                    <div id="player-shop">
+                        <h4>Player:</h4>
+                        <div id="player-shop-items" class="items-container">
+                            <!-- <div><span>Movement 1</span><button>100 Iron</button></div>
+                            <div><span>Movement 1</span><button>100 Iron</button></div> -->
+                        </div>
+                    </div>
+                    <div id="weapons-shop">
+                        <h4>Weapons:</h4>
+                        <div class="items-container">
+                            <!-- <div><span>Damage 1</span><button>1000 Iron</button></div> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="main.js"></script> 
     </body>
 </html>

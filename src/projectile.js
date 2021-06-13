@@ -1,12 +1,12 @@
 export default class Projectile {
-    constructor(x, y, radius, color, velocity)
+    constructor(x, y, radius, color, velocity, damage)
     {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.color = color;
         this.velocity = velocity;
-        this.damage = 1;
+        this.damage = damage;
     }
 
     draw(context) {

@@ -120,7 +120,20 @@ header a, a:visited {
 .inventory-dialog {
     z-index: 6;
     position: fixed;
+    align-items: flex-start;
+    display: flex;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    user-select: none;
+}
+
+.shop-dialog {
+    z-index: 6;
+    position: absolute;
     align-items: center;
+    justify-content: center;
     display: flex;
     top: 0;
     left: 0;
@@ -133,13 +146,35 @@ header a, a:visited {
     visibility: hidden;
 }
 
+#shop {
+    visibility: hidden;
+}
+
 .dialog-container {
     padding: 10px;
     background: rgba(255, 255, 255, 0.2);
     color: gray;
     min-width: 150px;
-    margin-left: 20px;
+    margin: 20px 0 0 20px;
     font-size: 18px;
+}
+
+.shop-dialog-container {
+    padding: 10px;
+    background: rgb(46, 46, 46);
+    color: rgb(199, 199, 199);
+    min-width: 500px;
+    min-height: 200px;
+    margin: 20px 0 0 20px;
+    font-size: 18px;
+    border: 2px solid blue;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.shop-dialog-container > h2 {
+    margin-top: 5px;
 }
 
 .dialog-container .header {
@@ -149,4 +184,45 @@ header a, a:visited {
 
 .right {
     float: right;
+}
+
+.weapons {
+    margin-top: 5px;
+}
+
+.sub-item {
+    padding-left: 20px;
+}
+
+.individual-shops {
+    display: flex;
+    margin-top: 10px;
+}
+.individual-shops button {
+    background: rgb(46, 46, 46);
+    color: rgb(199, 199, 199);
+    font-size: 16px;
+    border: .3px solid rgb(199, 199, 199);
+    border-radius: 5px;
+    padding: 5px;
+    margin-left: auto;
+}
+.items-container > div > span {
+    margin: auto auto auto 0;
+}
+.items-container > div {
+    display: flex;
+
+}
+#weapons-shop {
+    width: 100%;
+}
+#player-shop {
+    width: 100%;
+    padding-right: 10px;
+    /* background-color: red; */
+}
+.items-container {
+    display: flex;
+    flex-direction: column;
 }

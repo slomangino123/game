@@ -5,25 +5,46 @@ export default class Player {
         this.y = y;
         this.radius = radius;
         this.color = color;
-        this.inventory = [
-            {
-                resource: 'iron',
-                quantity: 0
-            },
-            {
-                resource: 'bronze',
-                quantity: 0
-            },
-        ];
+        
+        this.stats = {
+            movementSpeed: 1,
+            weaponSpeed: 1,
+            weaponDamage: 1,
+        };
+        this.inventory = {
+            iron: 0,
+            bronze: 0
+        }
+        this.setStatsOnScreen();
+    }
+
+    getTrueWeaponSpeed() {
+        return (this.stats.weaponSpeed * 500);
     }
 
     collectFragment(fragment, inventoryElements) {
-        const targetInventory = this.inventory.find((inventoryItem) => inventoryItem.resource == fragment.name);
-        targetInventory.quantity++;
-        const inventoryElement = inventoryElements.find((element) => element.itemName == fragment.name);
-        if (inventoryElement) {
-            inventoryElement.element.innerHTML = targetInventory.quantity;
-        }
+        this.inventory[fragment.name]++;
+        this.updateInventoryCount(fragment.name);
+        // const inventoryElement = inventoryElements.find((element) => element.itemName == fragment.name);
+        // if (inventoryElement) {
+        //     inventoryElement.element.innerHTML = this.inventory[fragment.name];
+        // }
+    }
+
+    updateInventoryCount(inventoryItem) {
+        const element = document.getElementById(`${inventoryItem}-count`);
+        element.innerHTML = this.inventory[inventoryItem];
+    }
+
+    setStatsOnScreen() {
+        const movementElement = document.getElementById('movement');
+        movementElement.innerHTML = this.stats.movementSpeed;
+
+        const weaponSpeedElement = document.getElementById('weapon-speed');
+        weaponSpeedElement.innerHTML = this.stats.weaponSpeed;
+
+        const weaponDamageElement = document.getElementById('weapon-damage');
+        weaponDamageElement.innerHTML = this.stats.weaponDamage;
     }
 
     draw(context, mouseX, mouseY) {

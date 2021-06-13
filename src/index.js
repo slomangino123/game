@@ -2,8 +2,12 @@ import Projectile from "./projectile";
 import Player from "./player";
 import Chunk from "./chunk";
 import Layer from "./layer";
+import ShopManager from "./shop-manager";
+
+
 
 window.onload = function() {
+    let gamePaused = false;
     let canvas = document.getElementById('canvas');
     let context = canvas.getContext('2d');
     canvas.height = innerHeight; //document.height is obsolete
@@ -30,6 +34,7 @@ window.onload = function() {
     });
     
     const inventoryElement = document.getElementById('inventory');
+    const shopElement = document.getElementById('shop');
     const bronzeCountElement = document.getElementById('bronze-count');
     const ironCountElement = document.getElementById('iron-count');
 
@@ -50,6 +55,8 @@ window.onload = function() {
     const chunks = [];
     const savedChunks = [];
     const fragments = [];
+    const shopManager = new ShopManager(player);
+
     
     let isScrollingUp = false;
     let isScrollingDown = false;
@@ -58,50 +65,64 @@ window.onload = function() {
 
     const backgroundImage1 = new Image();
     backgroundImage1.src = 'stars.png';
-    
     const backgroundLayer1 = new Layer(0, 0, canvas.width, canvas.height, backgroundImage1, .2);
-    console.log(backgroundLayer1);
     
     let wInterval;
     let aInterval;
     let sInterval;
     let dInterval;
+
+    function performAction(callback) {
+        if (gamePaused === true) {
+            return;
+        }
+        callback();
+    }
+
     window.addEventListener("keydown", event => {
         if (event.code === 'KeyW') { //w
-            if (!wInterval)
-            {
-                wInterval = setInterval(() =>
+            performAction(() => {
+                if (!wInterval)
                 {
-                    scrollCanvasUp();
-                }, 4)
-            }
+                    wInterval = setInterval(() =>
+                    {
+                        scrollCanvasUp();
+                    }, 4)
+                }
+            });
             return;
         }
         if (event.code === 'KeyA') { //a
-            if (!aInterval) {
-                aInterval = setInterval(() =>
-                {
-                    scrollCanvasLeft();
-                }, 4)
-            }
+            performAction(() => {
+                if (!aInterval) {
+                    aInterval = setInterval(() =>
+                    {
+                        scrollCanvasLeft();
+                    }, 4)
+                }
+            });
             return;
         }
         if (event.code === 'KeyS') { //s
-            if (!sInterval) {
-                sInterval = setInterval(() =>
-                {
-                    scrollCanvasDown();
-                }, 4)
-            }
+            performAction(() => {
+                if (!sInterval) {
+                    sInterval = setInterval(() =>
+                    {
+                        scrollCanvasDown();
+                    }, 4)
+                }
+            });
             return;
         }
         if (event.code === 'KeyD') { //d
-            if (!dInterval) {
-                dInterval = setInterval(() =>
-                {
-                    scrollCanvasRight();
-                }, 4)
-            }
+            performAction(() => {
+                if (!dInterval) {
+                    dInterval = setInterval(() =>
+                    {
+                        scrollCanvasRight();
+                    }, 4)
+                }
+            });
             return;
         }
         if (event.code === 'KeyE') { //e show inventory
@@ -111,27 +132,65 @@ window.onload = function() {
                 inventoryElement.style.visibility = 'hidden';
             }
         }
+        if (event.code === 'KeyQ') { //e show inventory
+            gamePaused = !gamePaused;
+            if (gamePaused === true) {
+                cancelAnimationFrame(animationFrameId);
+                pauseAllActions();
+            } else {
+                animate();
+            }
+            if (!shopElement.style.visibility || shopElement.style.visibility === 'hidden') {
+                shopElement.style.visibility = 'visible';
+            } else {
+                shopElement.style.visibility = 'hidden';
+            }
+        }
     });
+    function stopScrollingUp() {
+        window.clearInterval(wInterval);
+        wInterval = undefined;
+        isScrollingUp = false;
+    }
+    function stopScrollingDown() {
+        window.clearInterval(sInterval);
+        sInterval = undefined;
+        isScrollingDown = false;
+        
+    }
+    function stopScrollingLeft() {
+        window.clearInterval(aInterval);
+        aInterval = undefined;
+        isScrollingLeft = false;
+        
+    }
+    function stopScrollingRight() {
+        window.clearInterval(dInterval);
+        dInterval = undefined;
+        isScrollingRight = false;
+        
+    }
+    function pauseAllActions() {
+        stopScrollingUp();
+        stopScrollingDown();
+        stopScrollingLeft();
+        stopScrollingRight();
+        
+        clearInterval(fireInterval);
+
+    }
     window.addEventListener("keyup", event => {
         if (event.code === 'KeyW') { //w
-          window.clearInterval(wInterval);
-          wInterval = undefined;
-          isScrollingUp = false;
-        }
-        if (event.code === 'KeyA') { //a
-            window.clearInterval(aInterval);
-            aInterval = undefined;
-            isScrollingLeft = false;
+            stopScrollingUp();
         }
         if (event.code === 'KeyS') { //s
-            window.clearInterval(sInterval);
-            sInterval = undefined;
-            isScrollingDown = false;
+            stopScrollingDown();
+        }
+        if (event.code === 'KeyA') { //a
+            stopScrollingLeft();
         }
         if (event.code === 'KeyD') { //d
-            window.clearInterval(dInterval);
-            dInterval = undefined;
-            isScrollingRight = false;
+            stopScrollingRight();
         }
     });
     function fireProjectile() {
@@ -167,21 +226,26 @@ window.onload = function() {
                 player.y + y,
                 5,
                 'red',
-                velocity))
+                velocity,
+                player.stats.weaponDamage))
     }
     let fireInterval = undefined;
     window.addEventListener('mousedown', event => {
-        fireInterval = setInterval(() =>
-        {
-            fireProjectile(event);
-        }, 100)
+        performAction(() => {
+            fireInterval = setInterval(() =>
+            {
+                fireProjectile(event);
+            }, player.getTrueWeaponSpeed())
+        });
     });
     window.addEventListener('mouseup', event => {
         clearInterval(fireInterval);
     });
     
     window.addEventListener('click', event => {
-        fireProjectile(event);
+        performAction(() => {
+            fireProjectile(event);
+        });
     });
     
     
@@ -189,13 +253,13 @@ window.onload = function() {
         backgroundLayer1.scrollUp();
         isScrollingUp = true;
         chunks.forEach(chunk => {
-            chunk.y++;
+            chunk.y += player.stats.movementSpeed;
         });
         projectiles.forEach(projectile => {
-            projectile.y++;
+            projectile.y += player.stats.movementSpeed;
         });
         fragments.forEach(fragment => {
-            fragment.y++;
+            fragment.y += player.stats.movementSpeed;
         });
     }
     
@@ -203,13 +267,13 @@ window.onload = function() {
         backgroundLayer1.scrollDown();
         isScrollingDown = true;
         chunks.forEach(chunk => {
-            chunk.y--;
+            chunk.y -= player.stats.movementSpeed;
         });
         projectiles.forEach(projectile => {
-            projectile.y--;
+            projectile.y -= player.stats.movementSpeed;
         });
         fragments.forEach(fragment => {
-            fragment.y--;
+            fragment.y -= player.stats.movementSpeed;
         });
     }
     
@@ -217,13 +281,13 @@ window.onload = function() {
         backgroundLayer1.scrollLeft();
         isScrollingLeft = true;
         chunks.forEach(chunk => {
-            chunk.x++;
+            chunk.x += player.stats.movementSpeed;
         });
         projectiles.forEach(projectile => {
-            projectile.x++;
+            projectile.x += player.stats.movementSpeed;
         });
         fragments.forEach(fragment => {
-            fragment.x++;
+            fragment.x += player.stats.movementSpeed;
         });
     }
     
@@ -231,13 +295,13 @@ window.onload = function() {
         backgroundLayer1.scrollRight();
         isScrollingRight = true;
         chunks.forEach(chunk => {
-            chunk.x--;
+            chunk.x -= player.stats.movementSpeed;
         });
         projectiles.forEach(projectile => {
-            projectile.x--;
+            projectile.x -= player.stats.movementSpeed;
         });
         fragments.forEach(fragment => {
-            fragment.x--;
+            fragment.x -= player.stats.movementSpeed;
         });
     }
     
@@ -469,9 +533,8 @@ window.onload = function() {
             }
         }
     }
-    
+    let animationFrameId;
     function animate() {
-        requestAnimationFrame(animate);
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.fillStyle= 'black';
         context.fillRect(0, 0, canvas.width, canvas.height);
@@ -503,6 +566,7 @@ window.onload = function() {
     
         // Draw player last, so it is always on top
         player.draw(context, mouseX, mouseY);
+        animationFrameId = requestAnimationFrame(animate);
     }
     
     populateFirstChunk();
