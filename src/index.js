@@ -3,6 +3,7 @@ import Player from "./player";
 import Chunk from "./chunk";
 import Layer from "./layer";
 import ShopManager from "./shop-manager";
+import MapCoord from "./map-coordinate";
 
 
 
@@ -15,6 +16,8 @@ window.onload = function() {
     
     const CHUNK_HEIGHT = canvas.height;
     const CHUNK_WIDTH = canvas.width;
+    // const CHUNK_HEIGHT = 200;
+    // const CHUNK_WIDTH = 200;
     
     function reportWindowSize() {
         canvas.height = innerHeight;
@@ -52,8 +55,9 @@ window.onload = function() {
     
     const player = new Player(Math.round(canvas.width / 2), Math.round(canvas.height / 2), 30, 'blue');
     const projectiles = [];
-    const chunks = [];
+    const chunks_v2 = new Map();
     const savedChunks = [];
+    const savedChunks_v2 = new Map();
     const fragments = [];
     const shopManager = new ShopManager(player);
 
@@ -252,9 +256,9 @@ window.onload = function() {
     function scrollCanvasUp() {
         backgroundLayer1.scrollUp();
         isScrollingUp = true;
-        chunks.forEach(chunk => {
+        for (let chunk of chunks_v2.values()) {
             chunk.y += player.stats.movementSpeed;
-        });
+        }
         projectiles.forEach(projectile => {
             projectile.y += player.stats.movementSpeed;
         });
@@ -266,9 +270,9 @@ window.onload = function() {
     function scrollCanvasDown() {
         backgroundLayer1.scrollDown();
         isScrollingDown = true;
-        chunks.forEach(chunk => {
+        for (let chunk of chunks_v2.values()) {
             chunk.y -= player.stats.movementSpeed;
-        });
+        }
         projectiles.forEach(projectile => {
             projectile.y -= player.stats.movementSpeed;
         });
@@ -280,9 +284,9 @@ window.onload = function() {
     function scrollCanvasLeft() {
         backgroundLayer1.scrollLeft();
         isScrollingLeft = true;
-        chunks.forEach(chunk => {
+        for (let chunk of chunks_v2.values()) {
             chunk.x += player.stats.movementSpeed;
-        });
+        }
         projectiles.forEach(projectile => {
             projectile.x += player.stats.movementSpeed;
         });
@@ -294,9 +298,9 @@ window.onload = function() {
     function scrollCanvasRight() {
         backgroundLayer1.scrollRight();
         isScrollingRight = true;
-        chunks.forEach(chunk => {
+        for (let chunk of chunks_v2.values()) {
             chunk.x -= player.stats.movementSpeed;
-        });
+        }
         projectiles.forEach(projectile => {
             projectile.x -= player.stats.movementSpeed;
         });
@@ -306,20 +310,16 @@ window.onload = function() {
     }
     
     function despawnDistantChunks() {
-        const originalChunks = [...chunks];
-        for (let i = originalChunks.length - 1; i > -1; i--) {
-            if (chunks[i].x > (player.x + (CHUNK_WIDTH * 3)) || chunks[i].x < (player.x - (CHUNK_WIDTH * 3))) {
-                savedChunks.push(chunks[i]);
+        for (let [key, chunk] of chunks_v2) {
+            if (chunk.x > (player.x + (CHUNK_WIDTH * 3)) || chunk.x < (player.x - (CHUNK_WIDTH * 3))) {
                 setTimeout(() => {
-                    chunks.splice(i, 1);
-                }, 0);
-                continue;
+                    chunks_v2.delete(key);
+                }, 0); 
             }
     
-            if (chunks[i].y > (player.y + (CHUNK_HEIGHT * 3)) || chunks[i].y < (player.y - (CHUNK_HEIGHT * 3))) {
-                savedChunks.push(chunks[i]);
+            if (chunk.y > (player.y + (CHUNK_HEIGHT * 3)) || chunk.y < (player.y - (CHUNK_HEIGHT * 3))) {
                 setTimeout(() => {
-                    chunks.splice(i, 1);
+                    chunks_v2.delete(key);
                 }, 0);
             }
         }
@@ -333,8 +333,8 @@ window.onload = function() {
         for (let i = originalProjectiles.length - 1; i > -1; i--) {
             let withinChunk = false;
             // check every chunk to see if the projectile exists within it
-            for (let j = 0; j < chunks.length; j++) {
-                withinChunk = chunks[j].coordinatesAreWithinChunk(originalProjectiles[i].x, originalProjectiles[i].y);
+            for (let chunk of chunks_v2.values()) {
+                withinChunk = chunk.coordinatesAreWithinChunk(originalProjectiles[i].x, originalProjectiles[i].y);
                 if (withinChunk) {
                     break;
                 }            
@@ -357,8 +357,8 @@ window.onload = function() {
         for (let i = originalFragments.length - 1; i > -1; i--) {
             let withinChunk = false;
             // check every chunk to see if the projectile exists within it
-            for (let j = 0; j < chunks.length; j++) {
-                withinChunk = chunks[j].coordinatesAreWithinChunk(originalFragments[i].x, originalFragments[i].y);
+            for (let chunk of chunks_v2.values()) {
+                withinChunk = chunk.coordinatesAreWithinChunk(originalFragments[i].x, originalFragments[i].y);
                 if (withinChunk) {
                     break;
                 }            
@@ -379,15 +379,18 @@ window.onload = function() {
             x: player.x - (CHUNK_WIDTH / 2),
             y: player.y - (CHUNK_HEIGHT / 2),
             mapX: 0,
-            mapY: 0
+            mapY: 0,
+            mapCoord: new MapCoord(0, 0)
         };
         generateChunk(coords);
     }
     
     function generateChunk(coords) {
-        console.log(`Generating Chunk: ${coords.mapX}, ${coords.mapY}`);
-        const chunk = new Chunk(coords.x, coords.y, coords.mapX, coords.mapY, CHUNK_WIDTH, CHUNK_HEIGHT);
-        chunks.push(chunk);
+        console.log(`Generating Chunk: ${coords.mapCoord.x}, ${coords.mapCoord.y}`);
+        const chunk = new Chunk(coords.x, coords.y, coords.mapCoord.x, coords.mapCoord.y, CHUNK_WIDTH, CHUNK_HEIGHT);
+        const mapCoordKey = coords.mapCoord.getKey();
+        chunks_v2.set(mapCoordKey, chunk);
+        savedChunks_v2.set(mapCoordKey, chunk);
     }
     
     function populateSurroundingChunks() {
@@ -405,119 +408,94 @@ window.onload = function() {
             {
                 x: currentChunk.x - CHUNK_WIDTH,
                 y: currentChunk.y - CHUNK_HEIGHT,
-                mapX: currentChunk.mapX - 1,
-                mapY: currentChunk.mapY - 1
+                mapCoord: new MapCoord(currentChunk.mapX - 1, currentChunk.mapY - 1)
             });
         //top middle
         surroundingChunkCoords.push(
             {
                 x: currentChunk.x,
                 y: currentChunk.y - CHUNK_HEIGHT,
-                mapX: currentChunk.mapX,
-                mapY: currentChunk.mapY - 1
+                mapCoord: new MapCoord(currentChunk.mapX, currentChunk.mapY - 1)
             });
         //top right
         surroundingChunkCoords.push(
             {
                 x: currentChunk.x + CHUNK_WIDTH,
                 y: currentChunk.y - CHUNK_HEIGHT,
-                mapX: currentChunk.mapX + 1,
-                mapY: currentChunk.mapY - 1
+                mapCoord: new MapCoord(currentChunk.mapX + 1, currentChunk.mapY - 1)
             });
         // middle left
         surroundingChunkCoords.push(
             {
                 x: currentChunk.x - CHUNK_WIDTH,
                 y: currentChunk.y,
-                mapX: currentChunk.mapX - 1,
-                mapY: currentChunk.mapY
+                mapCoord: new MapCoord(currentChunk.mapX - 1, currentChunk.mapY)
             });
         // middle right
         surroundingChunkCoords.push(
             {
                 x: currentChunk.x + CHUNK_WIDTH,
                 y: currentChunk.y,
-                mapX: currentChunk.mapX + 1,
-                mapY: currentChunk.mapY
+                mapCoord: new MapCoord(currentChunk.mapX + 1, currentChunk.mapY)
             });
         // bottom left
         surroundingChunkCoords.push(
             {
                 x: currentChunk.x - CHUNK_WIDTH,
                 y: currentChunk.y + CHUNK_HEIGHT,
-                mapX: currentChunk.mapX - 1,
-                mapY: currentChunk.mapY + 1
+                mapCoord: new MapCoord(currentChunk.mapX - 1, currentChunk.mapY + 1)
             });
         // bottom middle
         surroundingChunkCoords.push(
             {
                 x: currentChunk.x,
                 y: currentChunk.y + CHUNK_HEIGHT,
-                mapX: currentChunk.mapX,
-                mapY: currentChunk.mapY + 1
+                mapCoord: new MapCoord(currentChunk.mapX, currentChunk.mapY + 1)
             });
         // bottom right
         surroundingChunkCoords.push(
             {
                 x: currentChunk.x + CHUNK_WIDTH,
                 y: currentChunk.y + CHUNK_HEIGHT,
-                mapX: currentChunk.mapX + 1,
-                mapY: currentChunk.mapY + 1
+                mapCoord: new MapCoord(currentChunk.mapX + 1, currentChunk.mapY + 1)
             });
-    
-        // chunk coordinates to generate based on what has already been generated and what exists on the screen
-        const chunkCoordsToGenerate = [];
-    
-        // List of chunks removed from memory and need to be loaded into the DOM
-        const chunksToLoadFromSaved = [];
-    loop1:
+
         for (let i = 0; i < surroundingChunkCoords.length; i++) {
-            
-            // Chunk doesnt exist in saved data, need to generate a chunk with these coords, push the coords
-            // into chunkCoordsToGenerate to generate later
-            const chunkExistsOnScreen = chunks.find((chunk) => chunk.x == surroundingChunkCoords[i].x && chunk.y == surroundingChunkCoords[i].y);
+            const mapCoordKey = surroundingChunkCoords[i].mapCoord.getKey();
+
+            // Check to see if chunk already exists loaded chunks, if so, no need to load or generate
+            const chunkExistsOnScreen = chunks_v2.has(mapCoordKey);
             if (chunkExistsOnScreen)
             {
                 // No need to load, it already exists
                 continue;
             }
-    loop2:
-            for (let j = 0; j < savedChunks.length; j++) {
-                // Chunk exists in the saved data, remove it from saved data, push it into chunksToLoadFromSaved to load later
-                if (savedChunks[j].mapX == surroundingChunkCoords[i].mapX && savedChunks[j].mapY == surroundingChunkCoords[i].mapY) {
-                    // the screen x and y coords might have changed since it was saved, update them to be correct now.
-                    const savedChunk = savedChunks[j];
-                    savedChunk.x = surroundingChunkCoords[i].x;
-                    savedChunk.y = surroundingChunkCoords[i].y;
-    
-                    chunksToLoadFromSaved.push(savedChunks[j]);
-                    // console.log(`loading saved chunk: ${savedChunks[j].mapX}, ${savedChunks[j].mapY}`)
-                    savedChunks.splice(j, 1);
-                    continue loop1;
-                }
+
+            
+            // See if chunk was saved
+            var savedChunk = savedChunks_v2.get(mapCoordKey)
+            if (savedChunk) { // Chunk was saved
+                // Update the chunks on-screen coordinates
+                savedChunk.x = surroundingChunkCoords[i].x;
+                savedChunk.y = surroundingChunkCoords[i].y;
+
+                // load the chunk
+                chunks_v2.set(mapCoordKey, savedChunk);
+                continue;
             }
-    
-            chunkCoordsToGenerate.push(surroundingChunkCoords[i]);
+
+            // Generate a new chunk, it was not previously saved.
+            generateChunk(surroundingChunkCoords[i]);
         }
-    
-        // generate any that do not exist
-        chunkCoordsToGenerate.forEach(chunkCoordinates => {
-            generateChunk(chunkCoordinates);
-        });
-    
-        chunksToLoadFromSaved.forEach(chunk => {
-            loadChunk(chunk);
-        });
-    }
-    
-    function loadChunk(chunk) {
-        console.log(`Loading Chunk: ${chunk.mapX}, ${chunk.mapY}`)
-        chunks.push(chunk);
     }
     
     function getPlayerOccupiedChunk() {
-        var occupiedChunk = chunks.find((chunk) => chunk.coordinatesAreWithinChunk(player.x, player.y));
-        return occupiedChunk;
+        for (let chunk of chunks_v2.values()) {
+            if (chunk.coordinatesAreWithinChunk(player.x, player.y))
+            {
+                return chunk;
+            }
+        }
     }
     
     function collectNearbyFragments() {
@@ -542,13 +520,13 @@ window.onload = function() {
         // Draw Background
         backgroundLayer1.draw(context);
 
-        chunks.forEach(chunk => {
+        for (let [key, chunk] of chunks_v2) {
             chunk.draw(context);
             const fragmentsToCreate = chunk.detectProjectileResourceCollisions(projectiles);
             fragmentsToCreate.forEach(fragment => {
                 fragments.push(fragment);
             });
-        });
+        }
     
         projectiles.forEach(projectile => {
             projectile.update(context);
