@@ -68,14 +68,13 @@ export default class Chunk {
     }
 
     detectProjectileResourceCollisions(projectiles) {
-        const projectilesCopy = [...projectiles];
         const fragmentsToCreate = [];
         for (let i = this.resources.length - 1; i > -1; i--) {
             const currentResource = this.resources[i];
-            for (let j = projectilesCopy.length - 1; j > -1; j--) {
-                const currentProjectile = projectilesCopy[j];
+            for (let j = projectiles.length - 1; j > -1; j--) {
+                const currentProjectile = projectiles[j];
                 const distance = Math.hypot(currentProjectile.x - currentResource.getScreenX(this), currentProjectile.y - currentResource.getScreenY(this));
-                if (distance - currentResource.radius - currentProjectile.radius < 1) {
+                if (distance  < currentResource.radius + currentProjectile.radius) {
                     const frags = currentResource.mine(currentProjectile.damage, this);
                     setTimeout(() => {
                         projectiles.splice(j, 1);

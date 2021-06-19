@@ -521,11 +521,11 @@ window.onload = function() {
         backgroundLayer1.draw(context);
 
         for (let [key, chunk] of chunks_v2) {
-            chunk.draw(context);
             const fragmentsToCreate = chunk.detectProjectileResourceCollisions(projectiles);
             fragmentsToCreate.forEach(fragment => {
                 fragments.push(fragment);
             });
+            chunk.draw(context);
         }
     
         projectiles.forEach(projectile => {
