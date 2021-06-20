@@ -1,67 +1,103 @@
 export default class ShopManager {
     constructor(player) {
         this.playerShopItems = {
-            movement1: {
-                display: 'Movement 1',
-                cost: [
-                   {resource: 'bronze', amount: 10}
-                ],
-                reward: .25,
-                purchased: false
-            },
-            movement2: {
-                display: 'Movement 2',
-                cost: [
-                    {resource: 'iron', amount: 500},
-                    {resource: 'bronze', amount: 1000}
-                ],
-                reward: 1,
-                purchased: false
+            movement: {
+                display: 'Movement',
+                tiers: [
+                    {
+                        tier: "1",
+                        reward: .25,
+                        cost: [
+                            { resource: 'bronze', amount: 1 }
+                        ],
+                        purchased: false
+                    },
+                    {
+                        tier: "2",
+                        reward: .2,
+                        cost: [
+                            { resource: 'bronze', amount: 1 },
+                            // { resource: 'iron', amount: 10 }
+                        ],
+                        purchased: false
+                    },
+                    {
+                        tier: "3",
+                        reward: .1,
+                        cost: [
+                            { resource: 'bronze', amount: 1 },
+                            // { resource: 'iron', amount: 100 }
+                        ],
+                        purchased: false
+                    },
+                ]
             }
         }
         this.weaponShopItems = {
-            speed1: {
-                display: 'Speed 1',
-                cost: [
-                    {resource: 'bronze', amount: 100}
-                ],
-                reward: 1,
-                purchased: false
-            },
-            damage1: {
-                display: 'Damage 1',
-                cost: [
-                    {resource: 'iron', amount: 50},
-                    {resource: 'bronze', amount: 220}
-                ],
-                reward: 1,
-                purchased: false
+            damage: {
+                display: 'Damage',
+                tiers: [
+                    {
+                        tier: "1",
+                        reward: 1,
+                        cost: [
+                            {resource: 'bronze', amount: 1},
+                            // {resource: 'iron', amount: 50},
+                        ],
+                        purchased: false
+                    },
+                    {
+                        tier: "2",
+                        reward: 1,
+                        cost: [
+                            {resource: 'bronze', amount: 1},
+                            // {resource: 'iron', amount: 50},
+                        ],
+                        purchased: false
+                    }
+                ]
             }
         }
         this.populatePlayerShop(player);
-        this.populateWeaponShop();
+        this.populateWeaponShop(player);
     }
 
     populatePlayerShop(player) {
         const playerShopItemsElement = document.getElementById('player-shop-items');
         for (const[key, value] of Object.entries(this.playerShopItems)) {
-            // <div><span>Movement 1</span><button>100 Iron</button></div>
-            let costString = '';
-            for (let i = 0; i < value.cost.length; i++) {
-                costString += value.cost[i].amount + ' ' + value.cost[i].resource + '<br>';
-            }
-            const elementString = this.htmlToElement(`<div><span>${value.display}</span><button id="purchase${key}">${costString}</button></div>`);
+            const currentTier = value.tiers.find(tier => !tier.purchased);
+            const costString = this.generateCostString(currentTier);
+            const elementString = this.htmlToElement(`<div class="player-shop-item"><span id="${key}-item">${value.display} ${currentTier.tier}</span><button id="purchase-${key}">${costString}</button></div>`);
             playerShopItemsElement.appendChild(elementString);
-            document.getElementById(`purchase${key}`).onclick = () => Object.getPrototypeOf(this)[`purchase${key}`].call(this, player);
-            // document.getElementById(`purchase${key}`).onclick = () => Object.getPrototypeOf(player)[`purchase${key}`].call(player, this);
+            document.getElementById(`purchase-${key}`).onclick = () => Object.getPrototypeOf(this)[`purchase${key}`].call(this, player);
         }
     }
 
-    purchasemovement1(player) {
+    populateWeaponShop(player) {
+        const weaponShopItemsElement = document.getElementById('weapon-shop-items');
+        for (const[key, value] of Object.entries(this.weaponShopItems)) {
+            const currentTier = value.tiers.find(tier => !tier.purchased);
+            const costString = this.generateCostString(currentTier);
+            const elementString = this.htmlToElement(`<div class="weapon-shop-item"><span id="${key}-item">${value.display} ${currentTier.tier}</span><button id="purchase-${key}">${costString}</button></div>`);
+            weaponShopItemsElement.appendChild(elementString);
+            document.getElementById(`purchase-${key}`).onclick = () => Object.getPrototypeOf(this)[`purchase${key}`].call(this, player);
+        }
+    }
+
+    generateCostString(tier) {
+        let costString = '';
+        for (let i = 0; i < tier.cost.length; i++) {
+            costString += tier.cost[i].amount + ' ' + tier.cost[i].resource + '<br>';
+        }
+        return costString;
+    }
+
+    purchasemovement(player) {
         // Check to see if player can afford the item
-        const shopItem = this.playerShopItems['movement1'];
-        for (let i = 0; i < shopItem.cost.length; i++) {
-            const cost = shopItem.cost[i];
+        const shopItem = this.playerShopItems['movement'];
+        const currentTier = shopItem.tiers.find(tier => !tier.purchased);
+        for (let i = 0; i < currentTier.cost.length; i++) {
+            const cost = currentTier.cost[i];
             if (player.inventory[cost.resource] < cost.amount) {
                 window.alert('Cant afford!');
                 return;
@@ -69,25 +105,71 @@ export default class ShopManager {
         }
 
         // deduct cost from player inventory
-        for (let i = 0; i < shopItem.cost.length; i++) {
-            const cost = shopItem.cost[i];
+        for (let i = 0; i < currentTier.cost.length; i++) {
+            const cost = currentTier.cost[i];
             player.inventory[cost.resource] -= cost.amount;
             player.updateInventoryCount(cost.resource);
         }
 
-        player.stats.movementSpeed += shopItem.reward;
+        player.stats.movementSpeed += currentTier.reward;
+        currentTier.purchased = true;
         player.setStatsOnScreen();
+
+        const tierDisplay = document.getElementById('movement-item');
+        const purchaseButton = document.getElementById('purchase-movement');
+
+        // Update the shop element values
+        const nextTier = shopItem.tiers.find(tier => !tier.purchased);
+        if (!nextTier) {
+            // gray this button out? They've purchased all the tiers
+            tierDisplay.innerHTML = `${shopItem.display} (Purchased)`
+            purchaseButton.disabled = true;
+            purchaseButton.style.display = 'none';
+            return;
+        }
+        
+        tierDisplay.innerHTML = `${shopItem.display} ${nextTier.tier}`;
+        const costString = this.generateCostString(nextTier);
+        purchaseButton.innerHTML = costString;
     }
 
-    purchasemovement2(player) {
-        console.log(player);
-    }
+    purchasedamage(player) {
+        // Check to see if player can afford the item
+        const shopItem = this.weaponShopItems['damage'];
+        const currentTier = shopItem.tiers.find(tier => !tier.purchased);
+        for (let i = 0; i < currentTier.cost.length; i++) {
+            const cost = currentTier.cost[i];
+            if (player.inventory[cost.resource] < cost.amount) {
+                window.alert('Cant afford!');
+                return;
+            }
+        }
 
-    populateWeaponShop() {
-        // for (const[key, value] of Object.entries(this.playerShopItems)) {
-            
-        //     const spanString = ``
-        // }
+        // deduct cost from player inventory
+        for (let i = 0; i < currentTier.cost.length; i++) {
+            const cost = currentTier.cost[i];
+            player.inventory[cost.resource] -= cost.amount;
+            player.updateInventoryCount(cost.resource);
+        }
+
+        player.stats.weaponDamage += currentTier.reward;
+        currentTier.purchased = true;
+        player.setStatsOnScreen();
+
+        // Update the shop element values
+        const nextTier = shopItem.tiers.find(tier => !tier.purchased);
+        if (!nextTier) {
+            // gray this button out? They've purchased all the tiers
+            const purchaseButton = document.getElementById('purchase-damage');
+            purchaseButton.disabled = true;
+            return;
+        }
+        
+        const tierDisplay = document.getElementById('damage-item');
+        tierDisplay.innerHTML = `${shopItem.display} ${nextTier.tier}`;
+        const purchaseButton = document.getElementById('purchase-damage');
+        const costString = this.generateCostString(nextTier);
+        purchaseButton.innerHTML = costString;
     }
 
     htmlToElement(html) {

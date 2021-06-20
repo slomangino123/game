@@ -1,5 +1,6 @@
 import BackgroundObject from "./background-object";
-import Resource from "./resource";
+import { DiamondDefender } from "./enemy";
+import {Resource, Iron, Bronze, Diamond} from "./resource";
 
 export default class Chunk {
     // static CHUNK_WIDTH = 200;
@@ -15,6 +16,7 @@ export default class Chunk {
 
         this.backgroundObjects = [];
         this.resources = [];
+        this.enemies = [];
         this.populateBackgroundObjects();
         this.populateResources();
     }
@@ -25,9 +27,9 @@ export default class Chunk {
 
             // spawn iron
             if (chance < .1) {
-                var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Resource.IRON_RADIUS);
-                const obj = Resource.ironResource(coordsWithinChunk.x, coordsWithinChunk.y);
-                this.resources.push(obj);
+                var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Iron.RADIUS);
+                const resource = new Iron(coordsWithinChunk.x, coordsWithinChunk.y);
+                this.resources.push(resource);
             }
         }
 
@@ -36,12 +38,32 @@ export default class Chunk {
 
             // spawn bronze
             if (chance > .7) {
-                var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Resource.BRONZE_RADIUS);
-                const resource = Resource.bronzeResource(coordsWithinChunk.x, coordsWithinChunk.y);
+                var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Bronze.RADIUS);
+                const resource = new Bronze(coordsWithinChunk.x, coordsWithinChunk.y);
                 this.resources.push(resource);
             }
         }
 
+        const diamondChance = Math.random();
+        // spawn diamond
+        if (diamondChance > 0) {
+            var coordsWithinChunk = this.getRandomCoordinatesInChunkWithRespectToChunkCoordinates(Diamond.RADIUS);
+            const resource = new Diamond(coordsWithinChunk.x, coordsWithinChunk.y);
+            this.resources.push(resource);
+            this.spawnDiamondDefender(resource);
+        }
+    }
+
+    spawnDiamondDefender(diamond) {
+        const pointNearDiamond = this.getRandomCoordinatesWithinDistanceToAnotherPoint(diamond.x, diamond.y, 100);
+        const diamondDefender = new DiamondDefender(pointNearDiamond.x, pointNearDiamond.y, 20, 'green', 10, diamond, this);
+        this.enemies.push(diamondDefender);
+    }
+
+    getRandomCoordinatesWithinDistanceToAnotherPoint(x, y, maxDistance) {
+        const newX = x + (((Math.random() - .5) * 2) * maxDistance);
+        const newY = y + (((Math.random() - .5) * 2) * maxDistance);
+        return {x: newX, y: newY};
     }
 
     getRandomCoordinatesInChunkWithRespectToChunkCoordinates(radius) {
@@ -80,7 +102,7 @@ export default class Chunk {
                         projectiles.splice(j, 1);
                     }, 0);
 
-                    if (frags.length > 0) {
+                    if (frags && frags.length > 0) {
                         for (let k = 0; k < frags.length; k++) {
                             fragmentsToCreate.push(frags[k]);                            
                         }
@@ -114,7 +136,11 @@ export default class Chunk {
 
         this.despawnResourcesWithRadiusZero();
         this.resources.forEach(obj => {
-            obj.draw(context, this);
+            obj.update(context, this);
         });
+
+        this.enemies.forEach(enemy => {
+            enemy.update(context, this);
+        })
     }
 }

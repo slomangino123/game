@@ -219,10 +219,13 @@ header a, a:visited {
 }
 #player-shop {
     width: 100%;
-    padding-right: 10px;
-    /* background-color: red; */
+    margin-right: 10px;
+    overflow: hidden;
 }
 .items-container {
     display: flex;
     flex-direction: column;
+}
+.player-shop-item {
+    margin: 10px 10px 0 0;
 }
