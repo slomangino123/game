@@ -60,6 +60,7 @@ window.onload = function() {
     const savedChunks_v2 = new Map();
     const fragments = [];
     const shopManager = new ShopManager(player);
+    const enemyProjectiles = [];
 
     
     let isScrollingUp = false;
@@ -265,6 +266,9 @@ window.onload = function() {
         fragments.forEach(fragment => {
             fragment.y += player.stats.movementSpeed;
         });
+        enemyProjectiles.forEach(proj => {
+            proj.y += player.stats.movementSpeed;
+        });
     }
     
     function scrollCanvasDown() {
@@ -278,6 +282,9 @@ window.onload = function() {
         });
         fragments.forEach(fragment => {
             fragment.y -= player.stats.movementSpeed;
+        });
+        enemyProjectiles.forEach(proj => {
+            proj.y -= player.stats.movementSpeed;
         });
     }
     
@@ -293,6 +300,9 @@ window.onload = function() {
         fragments.forEach(fragment => {
             fragment.x += player.stats.movementSpeed;
         });
+        enemyProjectiles.forEach(proj => {
+            proj.x += player.stats.movementSpeed;
+        });
     }
     
     function scrollCanvasRight() {
@@ -306,6 +316,9 @@ window.onload = function() {
         });
         fragments.forEach(fragment => {
             fragment.x -= player.stats.movementSpeed;
+        });
+        enemyProjectiles.forEach(proj => {
+            proj.x -= player.stats.movementSpeed;
         });
     }
     
@@ -525,8 +538,15 @@ window.onload = function() {
             fragmentsToCreate.forEach(fragment => {
                 fragments.push(fragment);
             });
-            chunk.draw(context);
+            const enemyProj = chunk.draw(context, player);
+            enemyProj.forEach(proj => {
+                enemyProjectiles.push(proj);
+            });
         }
+
+        enemyProjectiles.forEach(projectile => {
+            projectile.update(context);
+        })
     
         projectiles.forEach(projectile => {
             projectile.update(context);

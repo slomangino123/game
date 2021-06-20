@@ -47,14 +47,7 @@ export default class Fragment {
         const distance = Math.hypot(this.x - player.x, this.y - player.y);
         if (distance < 100) {
             // zoom to player
-            this.isTractored = true;// get angle to player
-            const angle = Math.atan2(player.y - this.y, player.x - this.x);
-            const velocity = {
-                x: Math.cos(angle) * this.tractorSpeed,
-                y: Math.sin(angle) * this.tractorSpeed,
-            }
-
-            this.velocity = velocity;
+            this.isTractored = true;
         }
 
         if (this.velocity.x == 0 && this.velocity.y == 0) {

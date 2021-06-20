@@ -125,11 +125,8 @@ export default class Chunk {
         }
     }
 
-    draw(context) {
-        // context.clearRect(this.x, this.y, this.chunkWidth, this.chunkHeight);
-        // context.fillStyle = 'black';
-        // context.fillRect(this.x, this.y, this.chunkWidth, this.chunkHeight);
-        
+    draw(context, player) {
+        let enemyProjectiles;
         this.backgroundObjects.forEach(obj => {
             obj.draw_v1(context, this);
         });
@@ -140,7 +137,9 @@ export default class Chunk {
         });
 
         this.enemies.forEach(enemy => {
-            enemy.update(context, this);
-        })
+            enemyProjectiles = enemy.update(context, this, player);
+        });
+
+        return enemyProjectiles;
     }
 }
