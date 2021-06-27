@@ -48,25 +48,30 @@ export default class Player {
     }
 
     draw(context, mouseX, mouseY) {
+        const playerSprite = new Image();
+        playerSprite.src = 'assets/player/playerShip3_blue.png';
+
+
         const angle = Math.atan2(mouseY - this.y, mouseX - this.x) + Math.PI/2;
 
-        const a = {x: this.x, y: this.y - 40};
-        const b = {x: this.x + 30, y: this.y + 20};
-        const c = {x: this.x - 30, y: this.y + 20};
+        // const a = {x: this.x, y: this.y - 40};
+        // const b = {x: this.x + 30, y: this.y + 20};
+        // const c = {x: this.x - 30, y: this.y + 20};
 
         context.translate(this.x, this.y);
         context.rotate(angle);
         context.translate(-this.x, -this.y);
+        context.drawImage(playerSprite, this.x-49, this.y-37);
 
-        context.beginPath();
+        // context.beginPath();
 
-        context.moveTo(a.x, a.y);
-        context.lineTo(b.x, b.y);
-        context.lineTo(c.x, c.y);
-        context.lineTo(a.x, a.y);
+        // context.moveTo(a.x, a.y);
+        // context.lineTo(b.x, b.y);
+        // context.lineTo(c.x, c.y);
+        // context.lineTo(a.x, a.y);
 
-        context.fillStyle = this.color;
-        context.fill();
+        // context.fillStyle = this.color;
+        // context.fill();
         context.resetTransform();
     }
 }

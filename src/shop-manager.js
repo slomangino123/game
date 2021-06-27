@@ -156,18 +156,20 @@ export default class ShopManager {
         currentTier.purchased = true;
         player.setStatsOnScreen();
 
+        const tierDisplay = document.getElementById('damage-item');
+        const purchaseButton = document.getElementById('purchase-damage');
+
         // Update the shop element values
         const nextTier = shopItem.tiers.find(tier => !tier.purchased);
         if (!nextTier) {
             // gray this button out? They've purchased all the tiers
-            const purchaseButton = document.getElementById('purchase-damage');
+            tierDisplay.innerHTML = `${shopItem.display} (Purchased)`
             purchaseButton.disabled = true;
+            purchaseButton.style.display = 'none';
             return;
         }
         
-        const tierDisplay = document.getElementById('damage-item');
         tierDisplay.innerHTML = `${shopItem.display} ${nextTier.tier}`;
-        const purchaseButton = document.getElementById('purchase-damage');
         const costString = this.generateCostString(nextTier);
         purchaseButton.innerHTML = costString;
     }

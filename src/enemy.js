@@ -1,11 +1,14 @@
 import Projectile from "./projectile";
 
 export default class Enemy {
+    constructor() {
+        this.damage = 1;
+    }
 
 }
 
 export class DiamondDefender extends Enemy {
-    constructor(x, y, radius, color, health, diamondToDefend, parentChunk) {
+    constructor(x, y, radius, color, health, diamondToDefend, parentChunk, imageSrc) {
         super();
         this.x = x;
         this.y = y;
@@ -13,7 +16,8 @@ export class DiamondDefender extends Enemy {
         this.color = color;
         this.health = health;
         this.diamondToDefend = diamondToDefend;
-
+        this.damage = 1;
+        
         // Behaviors:
         // 0: defending
         // 1: attacking
@@ -24,6 +28,13 @@ export class DiamondDefender extends Enemy {
         this.waiting = 20;
         this.aggroRange = 350;
         this.resetFireRate();
+        this.direction = 0;
+        
+        const sprite = new Image();
+        sprite.src = imageSrc;
+        this.sprite = sprite;
+
+        this.targetAquired = false;
     }
 
     resetFireRate() {
@@ -55,11 +66,18 @@ export class DiamondDefender extends Enemy {
     }
 
     draw(context, parentChunk) {
-        context.beginPath();
-        context.arc(this.getScreenX(parentChunk), this.getScreenY(parentChunk), this.radius, 0, Math.PI * 2, false);
-        context.fillStyle = this.color;
-        context.fill();
+        // context.beginPath();
+        // context.arc(this.getScreenX(parentChunk), this.getScreenY(parentChunk), this.radius, 0, Math.PI * 2, false);
+        // context.fillStyle = this.color;
+        // context.fill();
 
+        context.translate(this.getScreenX(parentChunk), this.getScreenY(parentChunk));
+        context.rotate(this.direction);
+        context.translate(-this.getScreenX(parentChunk), -this.getScreenY(parentChunk));
+
+        context.drawImage(this.sprite, this.getScreenX(parentChunk)-34, this.getScreenY(parentChunk)-28, 68, 56)
+
+        context.resetTransform();
         // Draw the waypoint they are heading to.
         // context.beginPath();
         // context.arc(this.getWaypointX(parentChunk), this.getWaypointY(parentChunk), 5, 0, Math.PI * 2, false);
@@ -68,6 +86,7 @@ export class DiamondDefender extends Enemy {
     }
     
     setNextWaypoint(parentChunk) {
+        this.targetAquired = false;
         const waypointX = Math.floor(this.diamondToDefend.x + ((Math.random() - .5) * this.wanderingDistance));
         const waypointY = Math.floor(this.diamondToDefend.y + ((Math.random() - .5) * this.wanderingDistance));
 
@@ -75,13 +94,36 @@ export class DiamondDefender extends Enemy {
         this.waypoint.y = waypointY;
 
         const angle = Math.atan2(this.getWaypointY(parentChunk) - this.getScreenY(parentChunk), this.getWaypointX(parentChunk) - this.getScreenX(parentChunk));
-    
+
         const speedMultiplier = 2;
     
         this.velocity = {
             x: Math.cos(angle) * speedMultiplier,
             y: Math.sin(angle) * speedMultiplier,
         }
+    }
+
+    pointAtWaypoint(parentChunk) {
+        const angle = Math.atan2(this.getWaypointY(parentChunk) - this.getScreenY(parentChunk), this.getWaypointX(parentChunk) - this.getScreenX(parentChunk)) - Math.PI/2;
+        
+        const differenceOfAngles = this.direction - angle;
+
+        const clockwiseDistance = this.direction
+        
+        if (differenceOfAngles < .2 && differenceOfAngles > -.2) {
+            this.direction = angle;
+            return;
+        }
+
+        const result = Math.sign(differenceOfAngles);
+        
+        if (result === -1) {
+            this.direction += .1;
+        } else if (result === 1) {
+            this.direction -= .1;
+        }
+
+        // this.direction = angle;
     }
 
     nearwaypoint(parentChunk) {
@@ -111,6 +153,7 @@ export class DiamondDefender extends Enemy {
                     this.waiting--;
                 }
             } else {
+                this.pointAtWaypoint(parentChunk);
                 this.x += this.velocity.x;
                 this.y += this.velocity.y;
             }
@@ -132,6 +175,8 @@ export class DiamondDefender extends Enemy {
             // Get angle from enemy to player
             const angle = Math.atan2(player.y - this.getScreenY(parentChunk), player.x - this.getScreenX(parentChunk));
             // const angle = Math.atan2(player.y - this.y, player.x - this.x);
+
+            this.direction = angle - Math.PI/2;
 
             const speedMultiplier = 5;
 
@@ -156,6 +201,18 @@ export class DiamondDefender extends Enemy {
         }
 
         return enemyProjectiles;
+    }
+
+    rotateToAngle(targetAngle) {
+        if (Math.floor(this.direction - targetAngle) == 0) {
+            return;
+        }
+        
+        if (targetAngle > this.direction) {
+            this.direction += .05;
+        } else {
+            this.direction -= .05;
+        }
     }
 
     getDistanceFromDiamondToPlayer(parentChunk, player) {

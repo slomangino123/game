@@ -56,7 +56,7 @@ export default class Chunk {
 
     spawnDiamondDefender(diamond) {
         const pointNearDiamond = this.getRandomCoordinatesWithinDistanceToAnotherPoint(diamond.x, diamond.y, 100);
-        const diamondDefender = new DiamondDefender(pointNearDiamond.x, pointNearDiamond.y, 20, 'green', 10, diamond, this);
+        const diamondDefender = new DiamondDefender(pointNearDiamond.x, pointNearDiamond.y, 20, 'green', 10, diamond, this, 'assets/enemy/enemyRed3.png');
         this.enemies.push(diamondDefender);
     }
 
@@ -96,7 +96,7 @@ export default class Chunk {
             for (let j = projectiles.length - 1; j > -1; j--) {
                 const currentProjectile = projectiles[j];
                 const distance = Math.hypot(currentProjectile.x - currentResource.getScreenX(this), currentProjectile.y - currentResource.getScreenY(this));
-                if (distance  < currentResource.radius + currentProjectile.radius) {
+                if (distance < currentResource.radius + currentProjectile.radius) {
                     const frags = currentResource.mine(currentProjectile.damage, this);
                     setTimeout(() => {
                         projectiles.splice(j, 1);

@@ -7,7 +7,7 @@ export class Resource {
         return new Resource(x, y, Resource.BRONZE_RADIUS, 'brown', 10, 1, 'bronze');
     }
 
-    constructor(x, y, radius, color, resourceCount, durability, name) {
+    constructor(x, y, radius, color, resourceCount, durability, name, imageSrc) {
         this.x = x;
         this.y = y;
         this.radius = radius;
@@ -18,6 +18,9 @@ export class Resource {
         this.durability = durability;
         this.name = name;
         this.hitCount = 0;
+        const sprite = new Image();
+        sprite.src = imageSrc;
+        this.sprite = sprite;
     }
 
     mine(damage, parentChunk) {
@@ -79,10 +82,11 @@ export class Resource {
     }
 
     draw(context, parentChunk) {
-        context.beginPath();
-        context.arc(this.getScreenX(parentChunk), this.getScreenY(parentChunk), this.radius, 0, Math.PI * 2, false);
-        context.fillStyle = this.color;
-        context.fill();
+        // context.beginPath();
+        // context.arc(this.getScreenX(parentChunk), this.getScreenY(parentChunk), this.radius, 0, Math.PI * 2, false);
+        // context.fillStyle = this.color;
+        // context.fill();
+        context.drawImage(this.sprite, this.getScreenX(parentChunk)-49, this.getScreenY(parentChunk)-48)
     }
 
     update(context, parentChunk) {
@@ -93,14 +97,14 @@ export class Resource {
 export class Iron extends Resource {
     static RADIUS = 10;
     constructor(x, y) {
-        super(x, y, Iron.RADIUS, 'gray', 5, 10, 'iron');
+        super(x, y, Iron.RADIUS, 'gray', 5, 10, 'iron', 'assets/resource/meteorGrey_big4.png');
     }
 }
 
 export class Bronze extends Resource {
     static RADIUS = 50;
     constructor(x, y) {
-        super(x, y, Bronze.RADIUS, 'brown', 10, 1, 'bronze');
+        super(x, y, Bronze.RADIUS, 'brown', 10, 1, 'bronze', 'assets/resource/meteorBrown_big4.png');
     }
 }
 
@@ -108,7 +112,7 @@ export class Bronze extends Resource {
 export class Diamond extends Resource {
     static RADIUS = 10;
     constructor(x, y) {
-        super(x, y, Diamond.RADIUS, 'white', 5, 20, 'bronze');
+        super(x, y, Diamond.RADIUS, 'white', 5, 20, 'bronze', 'assets/resource/meteorBrown_big4.png');
         this.angle = Math.atan2(0, 0);
     }
 

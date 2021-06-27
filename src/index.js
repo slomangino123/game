@@ -58,9 +58,8 @@ window.onload = function() {
     const chunks_v2 = new Map();
     const savedChunks = [];
     const savedChunks_v2 = new Map();
-    const fragments = [];
+    let fragments = [];
     const shopManager = new ShopManager(player);
-    const enemyProjectiles = [];
 
     
     let isScrollingUp = false;
@@ -157,33 +156,33 @@ window.onload = function() {
         wInterval = undefined;
         isScrollingUp = false;
     }
+
     function stopScrollingDown() {
         window.clearInterval(sInterval);
         sInterval = undefined;
         isScrollingDown = false;
-        
     }
+
     function stopScrollingLeft() {
         window.clearInterval(aInterval);
         aInterval = undefined;
         isScrollingLeft = false;
-        
     }
+
     function stopScrollingRight() {
         window.clearInterval(dInterval);
         dInterval = undefined;
         isScrollingRight = false;
-        
     }
+
     function pauseAllActions() {
         stopScrollingUp();
         stopScrollingDown();
         stopScrollingLeft();
         stopScrollingRight();
-        
         clearInterval(fireInterval);
-
     }
+
     window.addEventListener("keyup", event => {
         if (event.code === 'KeyW') { //w
             stopScrollingUp();
@@ -198,6 +197,7 @@ window.onload = function() {
             stopScrollingRight();
         }
     });
+
     function fireProjectile() {
         const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
         console.log(`Fire! ${angle}`);
@@ -234,6 +234,7 @@ window.onload = function() {
                 velocity,
                 player.stats.weaponDamage))
     }
+
     let fireInterval = undefined;
     window.addEventListener('mousedown', event => {
         performAction(() => {
@@ -266,9 +267,6 @@ window.onload = function() {
         fragments.forEach(fragment => {
             fragment.y += player.stats.movementSpeed;
         });
-        enemyProjectiles.forEach(proj => {
-            proj.y += player.stats.movementSpeed;
-        });
     }
     
     function scrollCanvasDown() {
@@ -282,9 +280,6 @@ window.onload = function() {
         });
         fragments.forEach(fragment => {
             fragment.y -= player.stats.movementSpeed;
-        });
-        enemyProjectiles.forEach(proj => {
-            proj.y -= player.stats.movementSpeed;
         });
     }
     
@@ -300,9 +295,6 @@ window.onload = function() {
         fragments.forEach(fragment => {
             fragment.x += player.stats.movementSpeed;
         });
-        enemyProjectiles.forEach(proj => {
-            proj.x += player.stats.movementSpeed;
-        });
     }
     
     function scrollCanvasRight() {
@@ -316,9 +308,6 @@ window.onload = function() {
         });
         fragments.forEach(fragment => {
             fragment.x -= player.stats.movementSpeed;
-        });
-        enemyProjectiles.forEach(proj => {
-            proj.x -= player.stats.movementSpeed;
         });
     }
     
@@ -339,15 +328,12 @@ window.onload = function() {
     }
     
     function despawnProjectilesOutsideChunks() {
-        // Copy the original array into a new object
-        const originalProjectiles = [...projectiles];
-    
         // loop backwards through the original array, splicing and updating as we go
-        for (let i = originalProjectiles.length - 1; i > -1; i--) {
+        for (let i = projectiles.length - 1; i > -1; i--) {
             let withinChunk = false;
             // check every chunk to see if the projectile exists within it
             for (let chunk of chunks_v2.values()) {
-                withinChunk = chunk.coordinatesAreWithinChunk(originalProjectiles[i].x, originalProjectiles[i].y);
+                withinChunk = chunk.coordinatesAreWithinChunk(projectiles[i].x, projectiles[i].y);
                 if (withinChunk) {
                     break;
                 }            
@@ -534,19 +520,14 @@ window.onload = function() {
         backgroundLayer1.draw(context);
 
         for (let [key, chunk] of chunks_v2) {
-            const fragmentsToCreate = chunk.detectProjectileResourceCollisions(projectiles);
-            fragmentsToCreate.forEach(fragment => {
-                fragments.push(fragment);
-            });
-            const enemyProj = chunk.draw(context, player);
-            enemyProj.forEach(proj => {
-                enemyProjectiles.push(proj);
-            });
-        }
+            fragments = fragments.concat(chunk.detectProjectileResourceCollisions(projectiles));
 
-        enemyProjectiles.forEach(projectile => {
-            projectile.update(context);
-        })
+            const newProjectiles = chunk.draw(context, player);
+            
+            newProjectiles.forEach(newProjectile => {
+                projectiles.push(newProjectile);
+            })
+        }
     
         projectiles.forEach(projectile => {
             projectile.update(context);
